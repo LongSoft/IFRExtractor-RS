@@ -1,0 +1,7 @@
+[package]
+name = "ifrextractor"
+version = "1.0.0"
+authors = ["Nikolaj Schlej <schlej@live.de>"]
+
+[dependencies]
+nom = { git = "https://github.com/Geal/nom" }
