@@ -1,0 +1,76 @@
+name: CI/CD
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_mac:
+    name: Build on macOS
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --verbose --release
+    - name: Upload to artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: macOS build
+        path: target/release/ifrextractor
+
+  build_freebsd:
+    name: Build on FreeBSD
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+    
+      - name: Build on FreeBSD inside macOS VM
+        id: test
+        uses: vmactions/freebsd-vm@v0
+        with:
+          usesh: true
+          prepare: |
+            pkg install -y rust
+          run: |
+            cargo build --verbose --release
+            
+      - name: Upload to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: FreeBSD build
+          path: target/release/ifrextractor
+
+  build_linux:
+    name: Build on Linux
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --verbose --release
+    - name: Upload to artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Linux build
+        path: target/release/ifrextractor
+
+  build_windows:
+    name: Build on Windows
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --verbose --release
+    - name: Upload to artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Windows build
+        path: target/release/ifrextractor.exe
+      

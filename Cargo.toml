@@ -1,0 +1,6 @@
+[package]
+name = "ifrextractor"
+version = "1.5.0"
+
+[dependencies]
+nom = "4.2.3"
