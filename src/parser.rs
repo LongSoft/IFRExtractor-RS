@@ -504,7 +504,7 @@ pub enum IfrOpcode {
     Default,           // Provide a default value for a question
     DefaultStore,      // Define a Default Type Declaration
     FormMap,           // Create a standards-map form
-    Concatenate,       // Push concatenated buffers or strings
+    Catenate,          // Push concatenated buffers or strings
     Guid,              // An extensible GUIDed op-code
     Security,          // Returns whether current user profile contains specified setup access privileges
     ModalTag,          // Specify current form is modal
@@ -610,7 +610,7 @@ impl From<u8> for IfrOpcode {
             0x5B => IfrOpcode::Default,
             0x5C => IfrOpcode::DefaultStore,
             0x5D => IfrOpcode::FormMap,
-            0x5E => IfrOpcode::Concatenate,
+            0x5E => IfrOpcode::Catenate,
             0x5F => IfrOpcode::Guid,
             0x60 => IfrOpcode::Security,
             0x61 => IfrOpcode::ModalTag,
@@ -1901,7 +1901,7 @@ pub fn ifr_form_map(input: &[u8]) -> IResult<&[u8], IfrFormMap> {
     )
 }
 
-//0x5E => IfrOpcode::Concatenate
+//0x5E => IfrOpcode::Catenate
 
 //
 //0x5F => IfrOpcode::Guid

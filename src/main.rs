@@ -56,11 +56,11 @@ fn ifr_extract(path: &OsStr, data: &[u8]) -> () {
         if let Ok((_, candidate)) = parser::hii_string_package_candidate(&data[i..]) {
             if let Ok((_, package)) = parser::hii_package(candidate) {
                 if let Ok((unp, string_package)) = parser::hii_string_package(package.Data.unwrap()) {
-                    write!(&mut text, "HII string package: Offset: 0x{:X}, Length: 0x{:X}, Language: {}", i, candidate.len(), string_package.Language);
                     if unp.len() > 0 {
                         writeln!(&mut text, "HII string package: remained unparsed: 0x{:X}", unp.len());
                     }
 
+                    write!(&mut text, "HII string package: Offset: 0x{:X}, Length: 0x{:X}, Language: {}", i, candidate.len(), string_package.Language);
                     i += candidate.len();
 
                     // Skip languages other than English for now
@@ -69,12 +69,12 @@ fn ifr_extract(path: &OsStr, data: &[u8]) -> () {
                         continue;
                     }
                     // Ask to split the input file if multiple string packages for English are found
-                    else if strings_map.len() > 0 {
+                    if strings_map.len() > 0 {
                         // TODO: some heuristics might be applied here to perform the split automatically
                         //       but they require a different, less generic way to search for HII packages
                         println!("Second HII string package of the same language found at offset 0x{:X}
-                                  There is no way for this program to determine what package will be used for a given form
-                                  Consider splitting the input file", i - candidate.len());
+There is no way for this program to determine what package will be used for a given form
+Consider splitting the input file", i - candidate.len());
                         std::process::exit(3);
                     }
                     writeln!(&mut text, "");
@@ -178,7 +178,7 @@ fn ifr_extract(path: &OsStr, data: &[u8]) -> () {
                                     parser::HiiSibtType::Ext2 => {;}
                                     // 0x32: Ext4
                                     parser::HiiSibtType::Ext4 => {;}
-                                    // Unknown SIBT block is impossible, because parsing will fail on it
+                                    // Unknown SIBT block is impossible, because parsing will fail on it due to it's unknown length
                                     parser::HiiSibtType::Unknown(_) => {;}
                                 }
                             } 
@@ -963,15 +963,16 @@ fn ifr_extract(path: &OsStr, data: &[u8]) -> () {
                                         Err(e) => { write!(&mut text, "Parse error: {:?}", e); }
                                     }
                                 }
-                                // 0x5E: Concatenate
-                                parser::IfrOpcode::Concatenate => {;}
+                                // 0x5E: Catenate
+                                parser::IfrOpcode::Catenate => {;}
                                 // 0x5F: GUID
                                 parser::IfrOpcode::Guid => {
                                     match parser::ifr_guid(operation.Data.unwrap()) {
                                         Ok((unp, guid)) => {
                                             if unp.len() > 0 { write!(&mut text, "Unparsed: 0x{:X}, ", unp.len()); }
 
-                                            // This manual parsing here is ugly and can ultimately be done using nom, but it's down already and not that important anyway
+                                            // This manual parsing here is ugly and can ultimately be done using nom, 
+                                            // but it's done already and not that important anyway
                                             // TODO: refactor later
                                             let mut done = false;
                                             match guid.Guid {
