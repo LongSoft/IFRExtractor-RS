@@ -262,15 +262,15 @@ pub fn hii_sibt_block(input: &[u8]) -> IResult<&[u8], HiiSibtBlock> {
             0x30 => peek!(do_parse!(le_u8 >> 
                               l: le_u8 >> 
                               take!(l as usize) >> 
-                              ( l as usize ))) | // Obtain lenght from Ext1 block
+                              ( l as usize ))) | // Obtain length from Ext1 block
             0x31 => peek!(do_parse!(le_u8 >> 
                               l: le_u16 >> 
                               take!(l as usize) >> 
-                              ( l as usize ))) | // Obtain lenght from Ext2 block
+                              ( l as usize ))) | // Obtain length from Ext2 block
             0x32 => peek!(do_parse!(le_u8 >> 
                               l: le_u32 >> 
                               take!(l as usize) >> 
-                              ( l as usize )))  // Obtain lenght from Ext4 block
+                              ( l as usize )))  // Obtain length from Ext4 block
         ) >> 
         dat: cond_with_error!(len > 0, take!(len)) >> 
         ( HiiSibtBlock {
@@ -970,18 +970,9 @@ impl fmt::Display for IfrTypeValue {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct IfrOneOfOption {
-    pub OptionStringId: u16,
-    pub Flags: u8,
-    pub Value: IfrTypeValue,
-}
-
-pub fn ifr_one_of_option(input: &[u8]) -> IResult<&[u8], IfrOneOfOption> {
+fn ifr_type_value (input: &[u8]) -> IResult<&[u8], IfrTypeValue> {
     do_parse!(input,
-        osid: le_u16 >>
-        flgs: le_u8 >>
-        val: switch!(le_u8,
+        val : switch!(le_u8,
                 0x00 => do_parse!(i: le_u8 >> ( IfrTypeValue::NumSize8(i) )) |
                 0x01 => do_parse!(i: le_u16 >> ( IfrTypeValue::NumSize16(i) )) |
                 0x02 => do_parse!(i: le_u32 >> ( IfrTypeValue::NumSize32(i) )) |
@@ -998,6 +989,22 @@ pub fn ifr_one_of_option(input: &[u8]) -> IResult<&[u8], IfrOneOfOption> {
                 x => value!(IfrTypeValue::Unknown(x)) 
         ) >>
         rest >>
+        ( val )
+    )
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct IfrOneOfOption {
+    pub OptionStringId: u16,
+    pub Flags: u8,
+    pub Value: IfrTypeValue,
+}
+
+pub fn ifr_one_of_option(input: &[u8]) -> IResult<&[u8], IfrOneOfOption> {
+    do_parse!(input,
+        osid: le_u16 >>
+        flgs: le_u8 >>
+        val: ifr_type_value >>
         ( IfrOneOfOption {
             OptionStringId: osid,
             Flags: flgs,
@@ -1820,23 +1827,7 @@ pub struct IfrDefault {
 pub fn ifr_default(input: &[u8]) -> IResult<&[u8], IfrDefault> {
     do_parse!(input,
         did: le_u16 >> 
-        val: switch!(le_u8,
-                0x00 => do_parse!(i: le_u8 >> ( IfrTypeValue::NumSize8(i) )) |
-                0x01 => do_parse!(i: le_u16 >> ( IfrTypeValue::NumSize16(i) )) |
-                0x02 => do_parse!(i: le_u32 >> ( IfrTypeValue::NumSize32(i) )) |
-                0x03 => do_parse!(i: le_u64 >> ( IfrTypeValue::NumSize64(i) )) |
-                0x04 => do_parse!(i: le_u8 >> ( IfrTypeValue::Boolean(i != 0) )) |
-                0x05 => do_parse!(t: hii_time >> ( IfrTypeValue::Time(t) )) |
-                0x06 => do_parse!(d: hii_date >> ( IfrTypeValue::Date(d) )) |
-                0x07 => do_parse!(i: le_u16 >> ( IfrTypeValue::String(i) )) |
-                0x08 => value!(IfrTypeValue::Other) |
-                0x09 => value!(IfrTypeValue::Undefined) |
-                0x0A => do_parse!(i: le_u16 >> ( IfrTypeValue::Action(i) )) |
-                0x0B => do_parse!(b: rest >> ( IfrTypeValue::Buffer(b.to_vec()) )) |
-                0x0C => do_parse!(r: hii_ref >> ( IfrTypeValue::Ref(r) )) |
-                x => value!(IfrTypeValue::Unknown(x)) 
-        ) >>
-        rest >>
+        val: ifr_type_value >>
         ( IfrDefault {
             DefaultId: did,
             Value: val

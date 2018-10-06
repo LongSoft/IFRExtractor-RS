@@ -162,11 +162,13 @@ Consider splitting the input file", i - candidate.len());
                                     }
                                     // 0x21: Skip2
                                     parser::HiiSibtType::Skip2 => {
+                                        // Manual parsing of Data as u16
                                         let count = block.Data.unwrap();
                                         current_string_index += count[0] as u16 + 0x100 * count[1] as u16;
                                     } 
                                     // 0x22: Skip1
                                     parser::HiiSibtType::Skip1 => {
+                                        // Manual parsing of Data as u8
                                         let count = block.Data.unwrap();
                                         current_string_index += count[0] as u16;
                                     } 
@@ -292,7 +294,7 @@ Consider splitting the input file", i - candidate.len());
                                         Ok((unp, onf)) => {
                                             if unp.len() > 0 { write!(&mut text, "Unparsed: 0x{:X}, ", unp.len()); }
 
-                                            write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: {}, Flags: 0x{:X}, MinMaxData: {:?}", 
+                                            write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}, MinMaxData: {:?}", 
                                                 strings_map.get(&onf.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&onf.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 onf.QuestionFlags,
@@ -311,7 +313,7 @@ Consider splitting the input file", i - candidate.len());
                                         Ok((unp, cb)) => {
                                             if unp.len() > 0 { write!(&mut text, "Unparsed: 0x{:X}, ", unp.len()); }
 
-                                            write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: {}, Flags: 0x{:X}", 
+                                            write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}", 
                                                 strings_map.get(&cb.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&cb.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 cb.QuestionFlags,
@@ -329,7 +331,7 @@ Consider splitting the input file", i - candidate.len());
                                         Ok((unp, num)) => {
                                             if unp.len() > 0 { write!(&mut text, "Unparsed: 0x{:X}, ", unp.len()); }
 
-                                            write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: {}, Flags: 0x{:X}, MinMaxData: {:?}", 
+                                            write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}, MinMaxData: {:?}", 
                                                 strings_map.get(&num.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&num.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 num.QuestionFlags,
@@ -622,7 +624,7 @@ Consider splitting the input file", i - candidate.len());
                                         Ok((unp, ol)) => {
                                             if unp.len() > 0 { write!(&mut text, "Unparsed: 0x{:X}, ", unp.len()); }
 
-                                            write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: {}, MaxContainers: {}, Flags: 0x{:X}", 
+                                            write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: 0x{:X}, MaxContainers: {}, Flags: 0x{:X}", 
                                                 strings_map.get(&ol.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&ol.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 ol.QuestionFlags,
@@ -641,7 +643,7 @@ Consider splitting the input file", i - candidate.len());
                                         Ok((unp, var_store)) => {
                                             if unp.len() > 0 { write!(&mut text, "Unparsed: 0x{:X}, ", unp.len()); }
 
-                                            write!(&mut text, "GUID: {}, VarStoreId: {}, Size: {}, Name: \"{}\"", var_store.Guid, var_store.VarStoreId, var_store.Size, var_store.Name);
+                                            write!(&mut text, "GUID: {}, VarStoreId: {}, Size: 0x{:X}, Name: \"{}\"", var_store.Guid, var_store.VarStoreId, var_store.Size, var_store.Name);
                                         }
                                         Err(e) => { write!(&mut text, "Parse error: {:?}", e); }
                                     }
@@ -663,7 +665,7 @@ Consider splitting the input file", i - candidate.len());
                                         Ok((unp, var_store)) => {
                                             if unp.len() > 0 { write!(&mut text, "Unparsed: 0x{:X}, ", unp.len()); }
 
-                                            write!(&mut text, "GUID: {}, VarStoreId: {}, Attributes: 0x{:X}, Size: {}, Name: \"{}\"", var_store.Guid, var_store.VarStoreId, var_store.Attributes, var_store.Size, var_store.Name);
+                                            write!(&mut text, "GUID: {}, VarStoreId: {}, Attributes: 0x{:X}, Size: 0x{:X}, Name: \"{}\"", var_store.Guid, var_store.VarStoreId, var_store.Attributes, var_store.Size, var_store.Name);
                                         }
                                         Err(e) => { write!(&mut text, "Parse error: {:?}", e); }
                                     }
