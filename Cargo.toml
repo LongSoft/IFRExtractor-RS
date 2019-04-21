@@ -4,4 +4,4 @@ version = "1.0.2"
 authors = ["Nikolaj Schlej <schlej@live.de>"]
 
 [dependencies]
-nom = { git = "https://github.com/Geal/nom" }
+nom = "4.2"
