@@ -1,8 +1,15 @@
 #![allow(non_snake_case)]
+#![allow(deprecated)]
 
 extern crate nom;
 
-use nom::{le_u8, le_u16, le_u32, le_u64, rest, IResult};
+use nom::{
+    le_u8, 
+    le_u16, 
+    le_u32, 
+    le_u64, 
+    rest, 
+    IResult};
 use std::fmt;
 
 //
@@ -86,7 +93,7 @@ impl From<u8> for HiiPackageType {
             0x07 => HiiPackageType::SimpleFonts,
             0x08 => HiiPackageType::DevicePath,
             0xDF => HiiPackageType::End,
-            0xE0...0xFF => HiiPackageType::System(n),
+            0xE0..=0xFF => HiiPackageType::System(n),
             _ => HiiPackageType::Unknown(n),
         }
     }
@@ -958,11 +965,11 @@ impl fmt::Display for IfrTypeValue {
             IfrTypeValue::Action(x) => write!(f, "Action: {}", x),
             IfrTypeValue::Buffer(ref x) => write!(f, "Buffer: {:?}", x),
             IfrTypeValue::Ref(x) => {
-                write!(f, "Ref");
-                if let Some(y) = x.QuestionId { write!(f, " QuestionId: {}",y ); }
-                if let Some(y) = x.FormId { write!(f, " FormId: {}", y); }
-                if let Some(y) = x.FormSetGuid { write!(f, " FormSetGuid: {}", y); }
-                if let Some(y) = x.DevicePathStringId { write!(f, " DevicePathId: {}", y); }
+                write!(f, "Ref").unwrap();
+                if let Some(y) = x.QuestionId { write!(f, " QuestionId: {}",y ).unwrap(); }
+                if let Some(y) = x.FormId { write!(f, " FormId: {}", y).unwrap(); }
+                if let Some(y) = x.FormSetGuid { write!(f, " FormSetGuid: {}", y).unwrap(); }
+                if let Some(y) = x.DevicePathStringId { write!(f, " DevicePathId: {}", y).unwrap(); }
                 write!(f, "")
             },
             IfrTypeValue::Unknown(x) => write!(f, "Unknown: {}", x),
