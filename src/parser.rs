@@ -54,7 +54,7 @@ impl fmt::Display for Guid {
 }
 
 //
-// EFI_HII_PACKAGE_HEADER
+// HII package header
 //
 #[derive(Debug, PartialEq, Eq)]
 pub struct HiiPackage<'a> {

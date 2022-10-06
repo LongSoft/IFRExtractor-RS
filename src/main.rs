@@ -188,11 +188,10 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                             }
 
                             // Summarise string package parsing results
-                            writeln!(&mut text, "Strings in the package: {}", strings_map.len())
-                                .unwrap();
+                            println!("Strings in the package: {}", strings_map.len());
                         }
                         Err(e) => {
-                            writeln!(&mut text, "HII SIBT blocks parse error: {:?}", e).unwrap();
+                            println!("HII SIBT blocks parse error: {:?}", e);
                         }
                     }
                 } else {
@@ -229,7 +228,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                         //let mut current_operation: usize = 0;
                         for operation in &operations {
                             //current_operation += 1;
-                            //writeln!(&mut text, "Operation #{}, OpCode: {:?}, Length 0x{:X}, ScopeStart: {}", current_operation, operation.OpCode, operation.Length, operation.ScopeStart).unwrap();
+                            //println!("Operation #{}, OpCode: {:?}, Length 0x{:X}, ScopeStart: {}", current_operation, operation.OpCode, operation.Length, operation.ScopeStart).unwrap();
                             match operation.OpCode {
                                 // 0x01: Form
                                 parser::IfrOpcode::Form => {
@@ -237,10 +236,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                         Ok((_, form)) => {
                                             string_ids.push(form.TitleStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "Form parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x02: Subtitle
@@ -250,10 +246,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(sub.PromptStringId);
                                             string_ids.push(sub.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "Subtitle parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x03: Text
@@ -264,22 +257,11 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(txt.HelpStringId);
                                             string_ids.push(txt.TextId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "Text parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x04: Image
-                                parser::IfrOpcode::Image => {
-                                    match parser::ifr_image(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Image parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Image => {}
                                 // 0x05: OneOf
                                 parser::IfrOpcode::OneOf => {
                                     match parser::ifr_one_of(operation.Data.unwrap()) {
@@ -287,10 +269,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(onf.PromptStringId);
                                             string_ids.push(onf.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "OneOf parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x06: CheckBox
@@ -300,10 +279,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(cb.PromptStringId);
                                             string_ids.push(cb.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "CheckBox parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x07: Numeric
@@ -313,10 +289,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(num.PromptStringId);
                                             string_ids.push(num.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "Numeric parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x08: Password
@@ -326,10 +299,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(pw.PromptStringId);
                                             string_ids.push(pw.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "Password parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x09: OneOfOption
@@ -347,10 +317,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                                 _ => {}
                                             }
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "OnOfOption parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x0A: SuppressIf
@@ -367,10 +334,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                                 string_ids.push(x);
                                             }
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "Action parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x0D: ResetButton
@@ -380,10 +344,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(rst.PromptStringId);
                                             string_ids.push(rst.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "ResetButton parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x0E: FormSet
@@ -393,10 +354,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(form_set.TitleStringId);
                                             string_ids.push(form_set.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "FormSet Parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x0F: Ref
@@ -406,10 +364,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(rf.PromptStringId);
                                             string_ids.push(rf.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "Ref Parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x10: NoSubmitIf
@@ -418,10 +373,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                         Ok((_, ns)) => {
                                             string_ids.push(ns.ErrorStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "NoSubmitIf parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x11: InconsistentIf
@@ -430,46 +382,15 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                         Ok((_, inc)) => {
                                             string_ids.push(inc.ErrorStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(
-                                                &mut text,
-                                                "InconsistentIf parse error: {:?}",
-                                                e
-                                            )
-                                            .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x12: EqIdVal
-                                parser::IfrOpcode::EqIdVal => {
-                                    match parser::ifr_eq_id_val(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "EqIdVal parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::EqIdVal => {}
                                 // 0x13: EqIdId
-                                parser::IfrOpcode::EqIdId => {
-                                    match parser::ifr_eq_id_id(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "EqIdId parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::EqIdId => {}
                                 // 0x14: EqIdValList
-                                parser::IfrOpcode::EqIdValList => {
-                                    match parser::ifr_eq_id_val_list(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "EqIdValList parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::EqIdValList => {}
                                 // 0x15: And
                                 parser::IfrOpcode::And => {}
                                 // 0x16: Or
@@ -477,15 +398,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                 // 0x17: Not
                                 parser::IfrOpcode::Not => {}
                                 // 0x18: Rule
-                                parser::IfrOpcode::Rule => {
-                                    match parser::ifr_rule(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Rule parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Rule => {}
                                 // 0x19: GrayOutIf
                                 parser::IfrOpcode::GrayOutIf => {}
                                 // 0x1A: Date
@@ -495,10 +408,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(dt.PromptStringId);
                                             string_ids.push(dt.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "Date parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x1B: Time
@@ -508,10 +418,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(time.PromptStringId);
                                             string_ids.push(time.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "Time parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x1C: String
@@ -521,34 +428,15 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(st.PromptStringId);
                                             string_ids.push(st.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "String parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x1D: Refresh
-                                parser::IfrOpcode::Refresh => {
-                                    match parser::ifr_refresh(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Refresh parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Refresh => {}
                                 // 0x1E: DisableIf
                                 parser::IfrOpcode::DisableIf => {}
                                 // 0x1F: Animation
-                                parser::IfrOpcode::Animation => {
-                                    match parser::ifr_animation(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Animation parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Animation => {}
                                 // 0x20: ToLower
                                 parser::IfrOpcode::ToLower => {}
                                 // 0x21: ToUpper
@@ -562,61 +450,22 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             string_ids.push(ol.PromptStringId);
                                             string_ids.push(ol.HelpStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "OrderedList parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x24: VarStore
-                                parser::IfrOpcode::VarStore => {
-                                    match parser::ifr_var_store(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "VarStore parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::VarStore => {}
                                 // 0x25: VarStoreNameValue
-                                parser::IfrOpcode::VarStoreNameValue => {
-                                    match parser::ifr_var_store_name_value(operation.Data.unwrap())
-                                    {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(
-                                                &mut text,
-                                                "VarStoreNameValue parse error: {:?}",
-                                                e
-                                            )
-                                            .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::VarStoreNameValue => {}
                                 // 0x26: VarStoreEfi258
-                                parser::IfrOpcode::VarStoreEfi => {
-                                    match parser::ifr_var_store_efi(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "VarStoreEfi parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::VarStoreEfi => {}
                                 // 0x27: VarStoreDevice
                                 parser::IfrOpcode::VarStoreDevice => {
                                     match parser::ifr_var_store_device(operation.Data.unwrap()) {
                                         Ok((_, var_store)) => {
                                             string_ids.push(var_store.DevicePathStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(
-                                                &mut text,
-                                                "VarStoreDevice parse error: {:?}",
-                                                e
-                                            )
-                                            .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x28: Version
@@ -626,25 +475,9 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                 // 0x2A: Match
                                 parser::IfrOpcode::Match => {}
                                 // 0x2B: Get
-                                parser::IfrOpcode::Get => {
-                                    match parser::ifr_get(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Get parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Get => {}
                                 // 0x2C: Set
-                                parser::IfrOpcode::Set => {
-                                    match parser::ifr_set(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Set parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Set => {}
                                 // 0x2D: Read
                                 parser::IfrOpcode::Read => {}
                                 // 0x2E: Write
@@ -682,71 +515,19 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                 // 0x3E: Modulo
                                 parser::IfrOpcode::Modulo => {}
                                 // 0x3F: RuleRef
-                                parser::IfrOpcode::RuleRef => {
-                                    match parser::ifr_rule_ref(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "RuleRef parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::RuleRef => {}
                                 // 0x40: QuestionRef1
-                                parser::IfrOpcode::QuestionRef1 => {
-                                    match parser::ifr_question_ref_1(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(
-                                                &mut text,
-                                                "QuestionRef1 parse error: {:?}",
-                                                e
-                                            )
-                                            .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::QuestionRef1 => {}
                                 // 0x41: QuestionRef2
                                 parser::IfrOpcode::QuestionRef2 => {}
                                 // 0x42: Uint8
-                                parser::IfrOpcode::Uint8 => {
-                                    match parser::ifr_uint8(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Uint8 parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Uint8 => {}
                                 // 0x43: Uint16
-                                parser::IfrOpcode::Uint16 => {
-                                    match parser::ifr_uint16(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Uint16 parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Uint16 => {}
                                 // 0x44: Uint32
-                                parser::IfrOpcode::Uint32 => {
-                                    match parser::ifr_uint32(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Uint32 parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Uint32 => {}
                                 // 0x45: Uint64
-                                parser::IfrOpcode::Uint64 => {
-                                    match parser::ifr_uint64(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Uint64 parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Uint64 => {}
                                 // 0x46: True
                                 parser::IfrOpcode::True => {}
                                 // 0x47: False
@@ -754,29 +535,13 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                 // 0x48: ToUint
                                 parser::IfrOpcode::ToUint => {}
                                 // 0x49: ToString
-                                parser::IfrOpcode::ToString => {
-                                    match parser::ifr_to_string(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "ToString parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::ToString => {}
                                 // 0x4A: ToBoolean
                                 parser::IfrOpcode::ToBoolean => {}
                                 // 0x4B: Mid
                                 parser::IfrOpcode::Mid => {}
                                 // 0x4C: Find
-                                parser::IfrOpcode::Find => {
-                                    match parser::ifr_find(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Find parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Find => {}
                                 // 0x4D: Token
                                 parser::IfrOpcode::Token => {}
                                 // 0x4E: StringRef1
@@ -785,10 +550,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                         Ok((_, st)) => {
                                             string_ids.push(st.StringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "StringRef1 parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x4F: StringRef2
@@ -797,22 +559,14 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                 parser::IfrOpcode::Conditional => {}
                                 // 0x51: QuestionRef3
                                 parser::IfrOpcode::QuestionRef3 => {
-                                    if operation.Length > 2 {
-                                        // TODO: Unclear why this is here, need to check the spec
+                                    if let Some(_) = operation.Data {
                                         match parser::ifr_question_ref_3(operation.Data.unwrap()) {
                                             Ok((_, qr)) => {
                                                 if let Some(x) = qr.DevicePathId {
                                                     string_ids.push(x);
                                                 }
                                             }
-                                            Err(e) => {
-                                                writeln!(
-                                                    &mut text,
-                                                    "QuestionRef3 parse error: {:?}",
-                                                    e
-                                                )
-                                                .unwrap();
-                                            }
+                                            Err(_) => {}
                                         }
                                     }
                                 }
@@ -831,15 +585,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                 // 0x58: This
                                 parser::IfrOpcode::This => {}
                                 // 0x59: Span
-                                parser::IfrOpcode::Span => {
-                                    match parser::ifr_span(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Span parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Span => {}
                                 // 0x5A: Value
                                 parser::IfrOpcode::Value => {}
                                 // 0x5B: Default
@@ -854,10 +600,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             }
                                             _ => {}
                                         },
-                                        Err(e) => {
-                                            writeln!(&mut text, "Default parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x5C: DefaultStore
@@ -866,14 +609,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                         Ok((_, default_store)) => {
                                             string_ids.push(default_store.NameStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(
-                                                &mut text,
-                                                "DefaultStore parse error: {:?}",
-                                                e
-                                            )
-                                            .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x5D: FormMap
@@ -884,10 +620,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                                 string_ids.push(method.MethodTitleId);
                                             }
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "FromMap parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x5E: Catenate
@@ -937,71 +670,32 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                                 _ => {}
                                             }
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "Guid parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x60: Security
-                                parser::IfrOpcode::Security => {
-                                    match parser::ifr_security(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Security parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Security => {}
                                 // 0x61: ModalTag
                                 parser::IfrOpcode::ModalTag => {}
                                 // 0x62: RefreshId
-                                parser::IfrOpcode::RefreshId => {
-                                    match parser::ifr_refresh_id(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "RefreshId parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::RefreshId => {}
                                 // 0x63: WarningIf
                                 parser::IfrOpcode::WarningIf => {
                                     match parser::ifr_warning_if(operation.Data.unwrap()) {
                                         Ok((_, warn)) => {
                                             string_ids.push(warn.WarningStringId);
                                         }
-                                        Err(e) => {
-                                            writeln!(&mut text, "WarningIf parse error: {:?}", e)
-                                                .unwrap();
-                                        }
+                                        Err(_) => {}
                                     }
                                 }
                                 // 0x64: Match2
-                                parser::IfrOpcode::Match2 => {
-                                    match parser::ifr_match_2(operation.Data.unwrap()) {
-                                        Ok((_, _)) => {}
-                                        Err(e) => {
-                                            writeln!(&mut text, "Match2 Parse error: {:?}", e)
-                                                .unwrap();
-                                        }
-                                    }
-                                }
+                                parser::IfrOpcode::Match2 => {}
                                 // Unknown operation
-                                parser::IfrOpcode::Unknown(x) => {
-                                    writeln!(
-                                        &mut text,
-                                        "Can't parse IFR operation of unknown type 0x{:X}",
-                                        x
-                                    )
-                                    .unwrap();
-                                }
+                                parser::IfrOpcode::Unknown(_) => {}
                             }
                         }
                     }
-                    Err(e) => {
-                        writeln!(&mut text, "IFR operations parse error: {:?}", e).unwrap();
-                    }
+                    Err(_) => {}
                 }
 
                 // Find min and max StringId, and the number of unique ones
@@ -1043,8 +737,6 @@ fn ifr_extract(path: &OsStr, data: &[u8]) -> () {
     // Search for all string packages in the input file
     // to build an ID to string map
     //
-    // Usage a C-style loop here is ugly, but works fine enough
-    // TODO: refactor later
     let mut i = 0;
     while i < data.len() {
         if let Ok((_, candidate)) = parser::hii_string_package_candidate(&data[i..]) {
@@ -1066,6 +758,7 @@ fn ifr_extract(path: &OsStr, data: &[u8]) -> () {
                         continue;
                     }
                     // Ask to split the input file if multiple string packages for English are found
+                    // TODO: improve this
                     if strings_map.len() > 0 {
                         // TODO: some heuristics might be applied here to perform the split automatically
                         //       but they require a different, less generic way to search for HII packages
@@ -1199,7 +892,7 @@ Consider splitting the input file",
                             }
                         }
                         Err(e) => {
-                            writeln!(&mut text, "HII SIBT blocks parse error: {:?}", e).unwrap();
+                            println!("HII SIBT blocks parse error: {:?}", e);
                         }
                     }
                 } else {
@@ -1271,7 +964,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Form parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1293,7 +992,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Subtitle parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1317,7 +1022,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Text parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1329,7 +1040,13 @@ Consider splitting the input file",
                                                 .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Iamge parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1387,7 +1104,13 @@ Consider splitting the input file",
                                             }
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("OneOf parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1405,7 +1128,13 @@ Consider splitting the input file",
                                                 cb.Flags).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("CheckBox parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1463,7 +1192,13 @@ Consider splitting the input file",
                                             }
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Numeric parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1482,7 +1217,13 @@ Consider splitting the input file",
                                                 pw.MaxSize).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Password parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1526,7 +1267,13 @@ Consider splitting the input file",
                                             }
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("OneOfOption parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1557,7 +1304,13 @@ Consider splitting the input file",
                                             }
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Action parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1579,7 +1332,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("ResetButton parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1601,7 +1360,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("FormSet parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1631,7 +1396,13 @@ Consider splitting the input file",
                                             }
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Ref parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1649,7 +1420,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("NoSubmitIf parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1667,7 +1444,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("InconsistentIf parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1683,7 +1466,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!(" EqIdVal parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1699,7 +1488,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("EqIdId parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1715,7 +1510,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("EqIdValList parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1732,7 +1533,13 @@ Consider splitting the input file",
                                             write!(&mut text, "RuleId: {}", rule.RuleId).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Rule parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1752,7 +1559,13 @@ Consider splitting the input file",
                                                 dt.Flags).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Date parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1770,7 +1583,13 @@ Consider splitting the input file",
                                                 time.Flags).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Time parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1790,7 +1609,13 @@ Consider splitting the input file",
                                                 st.Flags).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("String parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1806,7 +1631,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Refresh parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1820,7 +1651,13 @@ Consider splitting the input file",
                                                 .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Animation parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1845,7 +1682,13 @@ Consider splitting the input file",
                                                 ol.Flags).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("OrderedList parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1860,7 +1703,13 @@ Consider splitting the input file",
                                                 var_store.Name).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("VarStore parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1877,11 +1726,17 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("VarStoreNameValue parse error: {:?}", e);
                                         }
                                     }
                                 }
-                                // 0x26: VarStoreEfi258
+                                // 0x26: VarStoreEfi
                                 parser::IfrOpcode::VarStoreEfi => {
                                     match parser::ifr_var_store_efi(operation.Data.unwrap()) {
                                         Ok((_, var_store)) => {
@@ -1893,7 +1748,13 @@ Consider splitting the input file",
                                                 var_store.Name).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("VarStoreEfi parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1911,7 +1772,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("VarStoreDevice parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1931,7 +1798,13 @@ Consider splitting the input file",
                                                 get.VarStoreType).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Get parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1945,7 +1818,13 @@ Consider splitting the input file",
                                                 set.VarStoreType).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Set parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -1992,7 +1871,13 @@ Consider splitting the input file",
                                             write!(&mut text, "RuleId: {}", rule.RuleId).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("RuleRef parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2004,7 +1889,13 @@ Consider splitting the input file",
                                                 .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("QuestionRef1 parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2017,7 +1908,13 @@ Consider splitting the input file",
                                             write!(&mut text, "Value: {}", u.Value).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Uint8 parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2028,7 +1925,13 @@ Consider splitting the input file",
                                             write!(&mut text, "Value: {}", u.Value).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Uint16 parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2039,7 +1942,13 @@ Consider splitting the input file",
                                             write!(&mut text, "Value: {}", u.Value).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Uint32 parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2050,7 +1959,13 @@ Consider splitting the input file",
                                             write!(&mut text, "Value: {}", u.Value).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Uint64 parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2067,7 +1982,13 @@ Consider splitting the input file",
                                             write!(&mut text, "Format: 0x{:X}", ts.Format).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("ToString parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2083,7 +2004,13 @@ Consider splitting the input file",
                                                 .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Find parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2103,7 +2030,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("StringRef1 parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2113,7 +2046,7 @@ Consider splitting the input file",
                                 parser::IfrOpcode::Conditional => {}
                                 // 0x51: QuestionRef3
                                 parser::IfrOpcode::QuestionRef3 => {
-                                    if operation.Length > 2 {
+                                    if let Some(_) = operation.Data {
                                         match parser::ifr_question_ref_3(operation.Data.unwrap()) {
                                             Ok((_, qr)) => {
                                                 if let Some(x) = qr.DevicePathId {
@@ -2131,8 +2064,13 @@ Consider splitting the input file",
                                                 }
                                             }
                                             Err(e) => {
-                                                writeln!(&mut text, "Parse error: {:?}", e)
-                                                    .unwrap();
+                                                write!(
+                                                    &mut text,
+                                                    "RawData: {:?}",
+                                                    operation.Data.unwrap()
+                                                )
+                                                .unwrap();
+                                                println!("QuestionRef3 parse error: {:?}", e);
                                             }
                                         }
                                     }
@@ -2158,7 +2096,13 @@ Consider splitting the input file",
                                             write!(&mut text, "Flags: 0x{:X}", span.Flags).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Span parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2198,7 +2142,13 @@ Consider splitting the input file",
                                             }
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Default parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2217,7 +2167,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("DefaultStore parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2240,7 +2196,13 @@ Consider splitting the input file",
                                             }
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("FormMap parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2351,7 +2313,13 @@ Consider splitting the input file",
                                             }
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Guid parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2362,7 +2330,13 @@ Consider splitting the input file",
                                             write!(&mut text, "Guid: {}", sec.Guid).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Security parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2375,7 +2349,13 @@ Consider splitting the input file",
                                             write!(&mut text, "Guid: {}", rid.Guid).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("RefreshId parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2394,7 +2374,13 @@ Consider splitting the input file",
                                             .unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("WarningIf parse error: {:?}", e);
                                         }
                                     }
                                 }
@@ -2405,18 +2391,21 @@ Consider splitting the input file",
                                             write!(&mut text, "Guid: {}", m2.Guid).unwrap();
                                         }
                                         Err(e) => {
-                                            writeln!(&mut text, "Parse error: {:?}", e).unwrap();
+                                            write!(
+                                                &mut text,
+                                                "RawData: {:?}",
+                                                operation.Data.unwrap()
+                                            )
+                                            .unwrap();
+                                            println!("Match2 parse error: {:?}", e);
                                         }
                                     }
                                 }
                                 // Unknown operation
                                 parser::IfrOpcode::Unknown(x) => {
-                                    write!(
-                                        &mut text,
-                                        " - can't parse IFR operation of unknown type 0x{:X}",
-                                        x
-                                    )
-                                    .unwrap();
+                                    write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
+                                        .unwrap();
+                                    println!("IFR operation of unknown type 0x{:X}", x);
                                 }
                             }
                             writeln!(&mut text, "").unwrap();
@@ -2427,7 +2416,7 @@ Consider splitting the input file",
                         }
                     }
                     Err(e) => {
-                        writeln!(&mut text, "IFR operations parse error: {:?}", e).unwrap();
+                        println!("IFR operations parse error: {:?}", e);
                     }
                 }
             } else {
