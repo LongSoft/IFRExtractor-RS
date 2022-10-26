@@ -38,14 +38,15 @@ fn main() {
     let mut data = Vec::new();
     file.read_to_end(&mut data).expect("Can't read input file");
 
-    // List all string and form packages
-    list_string_and_form_packages(path.as_os_str(), &data);
+    // Find all string and form packages
+    let mut string_id_maps: Vec<HashMap<u16, String>> = Vec::new();
+    find_string_and_form_packages(path.as_os_str(), &data, &mut string_id_maps);
 
     // Call extraction function
     ifr_extract(path.as_os_str(), &data);
 }
 
-fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
+fn find_string_and_form_packages(path: &OsStr, data: &[u8], string_id_maps: &mut Vec<HashMap<u16, String>>) -> () {
     let mut text = Vec::new(); // Output text
 
     //
@@ -56,9 +57,9 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
         if let Ok((_, candidate)) = parser::hii_string_package_candidate(&data[i..]) {
             if let Ok((_, package)) = parser::hii_package(candidate) {
                 if let Ok((_, string_package)) = parser::hii_string_package(package.Data.unwrap()) {
-                    writeln!(
+                    write!(
                         &mut text,
-                        "HII string package: Offset: 0x{:X}, Length: 0x{:X}, Language: {}",
+                        "HII string package: Offset: 0x{:X}, Length: 0x{:X}, Language: {}, ",
                         i,
                         candidate.len(),
                         string_package.Language
@@ -66,12 +67,14 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                     .unwrap();
                     i += candidate.len();
 
-                    let mut strings_map = HashMap::new(); // Map of StringIds to strings
+                    let mut string_id_map = HashMap::new(); // Map of StringIds to strings
 
+                    //
                     // Parse SIBT blocks
+                    //
                     match parser::hii_sibt_blocks(string_package.Data) {
                         Ok((_, sibt_blocks)) => {
-                            strings_map.insert(0 as u16, String::new());
+                            string_id_map.insert(0 as u16, String::new());
                             let mut current_string_index = 1;
                             for block in &sibt_blocks {
                                 match block.Type {
@@ -82,7 +85,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                         if let Ok((_, string)) =
                                             parser::sibt_string_scsu(block.Data.unwrap())
                                         {
-                                            strings_map.insert(current_string_index, string);
+                                            string_id_map.insert(current_string_index, string);
                                             current_string_index += 1;
                                         }
                                     }
@@ -91,7 +94,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                         if let Ok((_, string)) =
                                             parser::sibt_string_scsu_font(block.Data.unwrap())
                                         {
-                                            strings_map.insert(current_string_index, string);
+                                            string_id_map.insert(current_string_index, string);
                                             current_string_index += 1;
                                         }
                                     }
@@ -101,7 +104,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             parser::sibt_strings_scsu(block.Data.unwrap())
                                         {
                                             for string in strings {
-                                                strings_map.insert(current_string_index, string);
+                                                string_id_map.insert(current_string_index, string);
                                                 current_string_index += 1;
                                             }
                                         }
@@ -112,7 +115,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             parser::sibt_strings_scsu_font(block.Data.unwrap())
                                         {
                                             for string in strings {
-                                                strings_map.insert(current_string_index, string);
+                                                string_id_map.insert(current_string_index, string);
                                                 current_string_index += 1;
                                             }
                                         }
@@ -122,7 +125,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                         if let Ok((_, string)) =
                                             parser::sibt_string_ucs2(block.Data.unwrap())
                                         {
-                                            strings_map.insert(current_string_index, string);
+                                            string_id_map.insert(current_string_index, string);
                                             current_string_index += 1;
                                         }
                                     }
@@ -131,7 +134,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                         if let Ok((_, string)) =
                                             parser::sibt_string_ucs2_font(block.Data.unwrap())
                                         {
-                                            strings_map.insert(current_string_index, string);
+                                            string_id_map.insert(current_string_index, string);
                                             current_string_index += 1;
                                         }
                                     }
@@ -141,7 +144,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             parser::sibt_strings_ucs2(block.Data.unwrap())
                                         {
                                             for string in strings {
-                                                strings_map.insert(current_string_index, string);
+                                                string_id_map.insert(current_string_index, string);
                                                 current_string_index += 1;
                                             }
                                         }
@@ -152,7 +155,7 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                             parser::sibt_strings_ucs2_font(block.Data.unwrap())
                                         {
                                             for string in strings {
-                                                strings_map.insert(current_string_index, string);
+                                                string_id_map.insert(current_string_index, string);
                                                 current_string_index += 1;
                                             }
                                         }
@@ -187,12 +190,14 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
                                 }
                             }
 
+                            //
                             // Summarise string package parsing results
-                            println!("Strings in the package: {}", strings_map.len());
+                            //
+                            writeln!(&mut text, "Strings: {}", string_id_map.len()).unwrap();
+                            string_id_maps.push(string_id_map);
+
                         }
-                        Err(e) => {
-                            println!("HII SIBT blocks parse error: {:?}", e);
-                        }
+                        Err(_) => {}
                     }
                 } else {
                     i += 1;
@@ -212,16 +217,18 @@ fn list_string_and_form_packages(path: &OsStr, data: &[u8]) -> () {
     while i < data.len() {
         if let Ok((_, candidate)) = parser::hii_form_package_candidate(&data[i..]) {
             if let Ok((_, package)) = parser::hii_package(candidate) {
-                writeln!(
+                write!(
                     &mut text,
-                    "HII form package: Offset: 0x{:X}, Length: 0x{:X}",
+                    "HII form package: Offset: 0x{:X}, Length: 0x{:X}, ",
                     i,
                     candidate.len()
                 )
                 .unwrap();
                 i += candidate.len();
 
+                //
                 // Parse form package and obtain StringIds
+                //
                 let mut string_ids: Vec<u16> = Vec::new(); // Output text
                 match parser::ifr_operations(package.Data.unwrap()) {
                     Ok((_, operations)) => {
@@ -915,8 +922,6 @@ Consider splitting the input file",
         std::process::exit(2);
     }
 
-    // Usage a C-style loop here is ugly, but works fine enough
-    // TODO: refactor later
     i = 0;
     while i < data.len() {
         if let Ok((_, candidate)) = parser::hii_form_package_candidate(&data[i..]) {
