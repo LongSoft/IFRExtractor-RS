@@ -15,17 +15,16 @@ use std::io::Write;
 use std::path::Path;
 use std::str;
 
-struct StringFormPair {
-    // From HII string package
-    string_package_num: usize,
-    string_package_offset: usize,
-    string_package_length: usize,
+struct StringPackage {
+    offset: usize,
+    length: usize,
     language: String,
     string_id_map: HashMap<u16, String>,
-    // From HII form package
-    form_package_num: usize,
-    form_package_offset: usize,
-    form_package_length: usize,
+}
+
+struct FormPackage {
+    offset: usize,
+    length: usize,
     used_strings: usize,
     min_string_id: u16,
     max_string_id: u16,
@@ -41,9 +40,11 @@ fn main() {
     if args.len() <= 1 {
         println!("
 IFRExtractor RS v{} - extracts HII string and form packages in UEFI Internal Form Representation (IFR) from a binary file into human-readable text
-Usage: ifrextractor file.bin - extract using every possible combination of string and form packages
-       ifrextractor file.bin info - provide information on the string and form packages in the input file
-       ifrextractor file.bin string_package_number form_package_number - extract using the exact string and form package (use info command to obtain the package numbers)", 
+Usage: ifrextractor file.bin list - list all string and form packages in the input file
+       ifrextractor file.bin single <form_package_number> <string_package_number> - extract a given form package using a given string package (use list command to obtain the package numbers)
+       ifrextractor file.bin lang <language> - extract all form packages using all string packages in a given language      
+       ifrextractor file.bin all - extract all form package using all string packages
+       ifrextractor file.bin - default extraction mode (shortcut for ifrextractor file.bin lang en-US)", 
         VERSION.unwrap_or("0.0.0"));
         std::process::exit(1);
     }
@@ -60,8 +61,8 @@ Usage: ifrextractor file.bin - extract using every possible combination of strin
     file.read_to_end(&mut data).expect("Can't read input file");
 
     // Find all string and form packages
-    let string_form_pairs = find_string_and_form_packages(&data);
-    if string_form_pairs.len() == 0 {
+    let (strings, forms) = find_string_and_form_packages(&data);
+    if strings.is_empty() || forms.is_empty() {
         println!("No IFR data to extract");
         std::process::exit(2);
     }
@@ -69,75 +70,96 @@ Usage: ifrextractor file.bin - extract using every possible combination of strin
     // Parse the other arguments
     let collected_args: Vec<String> = env::args().collect();
     if collected_args.len() == 2 {
-        // Extract everything
-        println!("Extracting every available string and form package combination");
-        for string_form_pair in &string_form_pairs {
-            ifr_extract(path.as_os_str(), &data, &string_form_pair);
+        // Extract all form packages using all string packages with en-US language
+        println!("Extracting all form packages using en-US string packages");
+        let mut found = false;
+        let mut form_num = 0;
+        for form in &forms {
+            let mut string_num = 0;
+            for string in &strings {
+                if string.language == "en-US" {
+                    found = true;
+                    ifr_extract(path.as_os_str(), &data, form, form_num, string, string_num);
+                }
+                string_num += 1;
+            }
+            form_num += 1;
         }
-    } else if collected_args.len() == 3 && collected_args[2] == "info" {
-        // Show the information
-        print!("Available string and form package combinations:");
-        for string_form_pair in &string_form_pairs {
-            println!(
-                "
-String package number: {}
-String package offset: 0x{:X}
-String package length: 0x{:X}
-String package language: {}
-Strings in the package: {}
-Form package number: {}
-Form package offset: 0x{:X}
-Form package length: 0x{:X}
-Strings used by form package: {}
-Minimal used string ID: {}
-Maximal used string ID: {}",
-                string_form_pair.string_package_num,
-                string_form_pair.string_package_offset,
-                string_form_pair.string_package_length,
-                string_form_pair.language,
-                string_form_pair.string_id_map.len(),
-                string_form_pair.form_package_num,
-                string_form_pair.form_package_offset,
-                string_form_pair.form_package_length,
-                string_form_pair.used_strings,
-                string_form_pair.min_string_id,
-                string_form_pair.max_string_id
-            );
+        if !found {
+            println!("No en-US string packages found");
+            std::process::exit(2);
         }
-        println!("");
-    } else if collected_args.len() == 4 {
-        // Extract the exact combination
-        let string_package_num: usize = collected_args[2]
-            .parse()
-            .expect("Can't parse string_package_number argument as a number");
+    } else if collected_args.len() == 3 && collected_args[2] == "list" {
+        println!("Form packages:");
+        let mut num = 0;
+        for form in &forms {
+            println!("Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Used strings: {}, Min StringId: {}, Max StringId: {}",
+                    num, form.offset, form.length, form.used_strings, form.min_string_id, form.max_string_id);
+            num += 1;
+        }
+        println!("String packages:");
+        num = 0;
+        for string in &strings {
+            println!("Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Language: {}, Total strings: {}",
+                    num, string.offset, string.length, string.language, string.string_id_map.len());
+            num +=1;
+        }
+    } else if collected_args.len() == 3 && collected_args[2] == "all" {
+        println!("Extracting all form packages using all string packages");
+        let mut form_num = 0;
+        for form in &forms {
+            let mut string_num = 0;
+            for string in &strings {
+                ifr_extract(path.as_os_str(), &data, form, form_num, string, string_num);
+                string_num += 1;
+            }
+            form_num += 1;
+        }
+    } else if collected_args.len() == 4 && collected_args[2] == "lang" {
+        // Extract all form packages using all string packages in a given language
+        println!("Extracting all form packages using {} string packages", collected_args[3]);
+        let mut found = false;
+        let mut form_num = 0;
+        for form in &forms {
+            let mut string_num = 0;
+            for string in &strings {
+                if string.language == collected_args[3] {
+                    found = true;
+                    ifr_extract(path.as_os_str(), &data, form, form_num, string, string_num);
+                }
+                string_num += 1;
+            }
+            form_num += 1;
+        }
+        if !found {
+            println!("No {} string packages found", collected_args[3]);
+            std::process::exit(2);
+        }
+    } else if collected_args.len() == 5 && collected_args[2] == "single" {
+        // Extract the exact single combination
         let form_package_num: usize = collected_args[3]
             .parse()
             .expect("Can't parse form_package_number argument as a number");
-        let mut extracted = false;
-        for string_form_pair in &string_form_pairs {
-            if string_form_pair.string_package_num == string_package_num
-                && string_form_pair.form_package_num == form_package_num
-            {
-                println!(
-                    "Extracting form package #{} using string package #{}",
-                    form_package_num, string_package_num
-                );
-                ifr_extract(path.as_os_str(), &data, &string_form_pair);
-                extracted = true;
-                break;
-            }
+        if form_package_num > forms.len() - 1 {
+            println!("Provided form_package_number argument {} is out of range [0..{}]", form_package_num, forms.len() - 1);
+            std::process::exit(4);
         }
-        if !extracted {
-            println!("String and form combination with supplied package numbers not found");
-            std::process::exit(3);
+        let string_package_num: usize = collected_args[4]
+            .parse()
+            .expect("Can't parse string_package_number argument as a number");
+        if string_package_num > strings.len() - 1 {
+            println!("Provided string_package_number argument {} is out of range [0..{}]", string_package_num, strings.len() - 1);
+            std::process::exit(4);
         }
+        println!("Extracting form package #{} using string package #{}", form_package_num, string_package_num);
+        ifr_extract(path.as_os_str(), &data, &forms[form_package_num], form_package_num, &strings[string_package_num], string_package_num);
     } else {
-        println!("Invalid argument");
+        println!("Invalid arguments");
         std::process::exit(4);
     }
 }
 
-fn find_string_and_form_packages(data: &[u8]) -> Vec<StringFormPair> {
+fn find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<FormPackage>) {
     let mut strings = Vec::new(); // String-to-id maps for all found string packages
 
     // Search for all string packages in the input file
@@ -289,7 +311,7 @@ fn find_string_and_form_packages(data: &[u8]) -> Vec<StringFormPair> {
 
     // No need to continue if there are no string packages found
     if strings.len() == 0 {
-        return Vec::new();
+        return (Vec::new(), Vec::new());
     }
 
     //
@@ -802,43 +824,50 @@ fn find_string_and_form_packages(data: &[u8]) -> Vec<StringFormPair> {
 
     // No need to continue if no forms are found
     if forms.len() == 0 {
-        return Vec::new();
+        return (Vec::new(), Vec::new());
     }
 
-    // Construct the resulting vector of structures
-    // Here we construct and return every possible combination, and it's for the caller to determine what to consume
-    let mut result = Vec::new();
-    let mut string_num = 0;
+    // Construct return value
+    let mut result_strings = Vec::new();
+    let mut result_forms = Vec::new();
     for string in &strings {
-        let mut form_num = 0;
-        for form in &forms {
-            result.push(StringFormPair {
-                string_package_num: string_num,
-                string_package_offset: string.0,
-                string_package_length: string.1,
+        result_strings.push(
+            StringPackage {
+                offset: string.0,
+                length: string.1,
                 language: string.2.clone(),
                 string_id_map: string.3.clone(),
-                form_package_num: form_num,
-                form_package_offset: form.0,
-                form_package_length: form.1,
-                used_strings: form.2,
-                min_string_id: form.3,
-                max_string_id: form.4,
-            });
-            form_num += 1;
-        }
-        string_num += 1;
+            }
+        );
+    }
+    for form in &forms {
+        result_forms.push(
+                FormPackage {
+                    offset: form.0,
+                    length: form.1,
+                    used_strings: form.2,
+                    min_string_id: form.3,
+                    max_string_id: form.4,
+                }
+        );
     }
 
-    return result;
+    return (result_strings, result_forms);
 }
 
-fn ifr_extract(path: &OsStr, data: &[u8], string_form_pair: &StringFormPair) -> () {
+fn ifr_extract(
+    path: &OsStr, 
+    data: &[u8], 
+    form_package: &FormPackage, 
+    form_package_index: usize,
+    string_package: &StringPackage, 
+    string_package_index: usize
+    ) -> () {
     let mut text = Vec::new();
-    let strings_map = &string_form_pair.string_id_map;
+    let strings_map = &string_package.string_id_map;
 
     if let Ok((_, candidate)) =
-        parser::hii_form_package_candidate(&data[string_form_pair.form_package_offset..])
+        parser::hii_form_package_candidate(&data[form_package.offset..])
     {
         if let Ok((_, package)) = parser::hii_package(candidate) {
             // Parse form package and output its structure as human-readable strings
@@ -2147,11 +2176,11 @@ fn ifr_extract(path: &OsStr, data: &[u8], string_form_pair: &StringFormPair) -> 
     let mut file_path = OsString::new();
     file_path.push(path);
     file_path.push(".");
-    file_path.push(string_form_pair.string_package_num.to_string());
+    file_path.push(form_package_index.to_string());
     file_path.push(".");
-    file_path.push(string_form_pair.form_package_num.to_string());
+    file_path.push(string_package_index.to_string());
     file_path.push(".");
-    file_path.push(string_form_pair.language.clone());
+    file_path.push(string_package.language.clone());
     file_path.push(".ifr.txt");
     let mut output_file = OpenOptions::new()
         .write(true)
