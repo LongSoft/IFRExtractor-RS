@@ -2147,11 +2147,11 @@ fn ifr_extract(path: &OsStr, data: &[u8], string_form_pair: &StringFormPair) -> 
     let mut file_path = OsString::new();
     file_path.push(path);
     file_path.push(".");
-    file_path.push(string_form_pair.language.clone());
-    file_path.push(".");
     file_path.push(string_form_pair.string_package_num.to_string());
     file_path.push(".");
     file_path.push(string_form_pair.form_package_num.to_string());
+    file_path.push(".");
+    file_path.push(string_form_pair.language.clone());
     file_path.push(".ifr.txt");
     let mut output_file = OpenOptions::new()
         .write(true)
