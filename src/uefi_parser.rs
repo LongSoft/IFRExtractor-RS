@@ -422,7 +422,6 @@ pub fn ifr_operations(input: &[u8]) -> IResult<&[u8], Vec<IfrOperation>> {
     do_parse!(input, v: many1!(complete!(ifr_operation)) >> (v))
 }
 
-// Obtained from UEFI 2.7 Errata A, ch. "32.3.8.3 Opcode Reference"
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum IfrOpcode {
     Form,              // Form
