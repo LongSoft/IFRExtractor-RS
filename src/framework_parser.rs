@@ -784,7 +784,8 @@ pub fn ifr_grayout_if(input: &[u8]) -> IResult<&[u8], IfrGrayOutIf> {
 //
 //0x1A => IfrOpcode::Date
 //
-#[derive(Debug, PartialEq, Eq)]pub struct IfrDate {
+#[derive(Debug, PartialEq, Eq)]
+pub struct IfrDate {
     pub QuestionId: u16,
     pub Width: u8,
     pub PromptStringId: u16,
@@ -1108,7 +1109,7 @@ pub struct IfrVarStore {
 pub fn ifr_var_store(input: &[u8]) -> IResult<&[u8], IfrVarStore> {
     do_parse!(
         input,
-               g: guid
+        g: guid
             >> vsid: le_u16
             >> size: le_u16
             >> name: string_ascii

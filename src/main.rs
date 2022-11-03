@@ -2365,7 +2365,8 @@ fn framework_ifr_extract(
                     for operation in &operations {
                         // Special case of operations that decrease scope_depth
                         if operation.OpCode == framework_parser::IfrOpcode::EndFormSet
-                        || operation.OpCode == framework_parser::IfrOpcode::EndForm {
+                            || operation.OpCode == framework_parser::IfrOpcode::EndForm
+                        {
                             if scope_depth > 0 {
                                 scope_depth -= 1;
                             }
@@ -2383,11 +2384,15 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Form => {
                                 match framework_parser::ifr_form(operation.Data.unwrap()) {
                                     Ok((_, form)) => {
-                                        write!(&mut text, 
-                                            "Title: {}, FormId: 0x{:X}", 
-                                            strings_map.get(&form.TitleStringId).unwrap_or(&String::from("InvalidId")),
+                                        write!(
+                                            &mut text,
+                                            "Title: {}, FormId: 0x{:X}",
+                                            strings_map
+                                                .get(&form.TitleStringId)
+                                                .unwrap_or(&String::from("InvalidId")),
                                             form.FormId
-                                        ).unwrap();
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2402,10 +2407,14 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Subtitle => {
                                 match framework_parser::ifr_subtitle(operation.Data.unwrap()) {
                                     Ok((_, subtitle)) => {
-                                        write!(&mut text, 
-                                            "Subtitle: {}", 
-                                            strings_map.get(&subtitle.SubtitleStringId).unwrap_or(&String::from("InvalidId"))
-                                        ).unwrap();
+                                        write!(
+                                            &mut text,
+                                            "Subtitle: {}",
+                                            strings_map
+                                                .get(&subtitle.SubtitleStringId)
+                                                .unwrap_or(&String::from("InvalidId"))
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2418,8 +2427,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Text => {
                                 match framework_parser::ifr_text(operation.Data.unwrap()) {
                                     Ok((_, txt)) => {
-                                        write!(&mut text, 
-                                            "Text: {}, TextTwo: {}, Help: {}, Flags: 0x{:X}, Key: 0x{:X}", 
+                                        write!(&mut text,
+                                            "Text: {}, TextTwo: {}, Help: {}, Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map.get(&txt.TextStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&txt.TextTwoStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&txt.HelpStringId).unwrap_or(&String::from("InvalidId")),
@@ -2440,13 +2449,19 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::OneOf => {
                                 match framework_parser::ifr_one_of(operation.Data.unwrap()) {
                                     Ok((_, oneof)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}", 
-                                            strings_map.get(&oneof.PromptStringId).unwrap_or(&String::from("InvalidId")),
-                                            strings_map.get(&oneof.HelpStringId).unwrap_or(&String::from("InvalidId")),
+                                        write!(
+                                            &mut text,
+                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}",
+                                            strings_map
+                                                .get(&oneof.PromptStringId)
+                                                .unwrap_or(&String::from("InvalidId")),
+                                            strings_map
+                                                .get(&oneof.HelpStringId)
+                                                .unwrap_or(&String::from("InvalidId")),
                                             oneof.QuestionId,
                                             oneof.Width
-                                        ).unwrap();
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2459,8 +2474,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::CheckBox => {
                                 match framework_parser::ifr_check_box(operation.Data.unwrap()) {
                                     Ok((_, checkbox)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}", 
+                                        write!(&mut text,
+                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map.get(&checkbox.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&checkbox.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             checkbox.QuestionId,
@@ -2480,8 +2495,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Numeric => {
                                 match framework_parser::ifr_numeric(operation.Data.unwrap()) {
                                     Ok((_, numeric)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, Min: {}, Max: {}, Step: {}, Default: {}", 
+                                        write!(&mut text,
+                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, Min: {}, Max: {}, Step: {}, Default: {}",
                                             strings_map.get(&numeric.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&numeric.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             numeric.QuestionId,
@@ -2505,8 +2520,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Password => {
                                 match framework_parser::ifr_password(operation.Data.unwrap()) {
                                     Ok((_, password)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, MinSize: {}, MaxSize: {}, Encoding 0x{:X}", 
+                                        write!(&mut text,
+                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, MinSize: {}, MaxSize: {}, Encoding 0x{:X}",
                                             strings_map.get(&password.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&password.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             password.QuestionId,
@@ -2529,13 +2544,17 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::OneOfOption => {
                                 match framework_parser::ifr_one_of_option(operation.Data.unwrap()) {
                                     Ok((_, oneofopt)) => {
-                                        write!(&mut text, 
-                                            "Option: {}, Value: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}", 
-                                            strings_map.get(&oneofopt.OptionStringId).unwrap_or(&String::from("InvalidId")),
+                                        write!(
+                                            &mut text,
+                                            "Option: {}, Value: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
+                                            strings_map
+                                                .get(&oneofopt.OptionStringId)
+                                                .unwrap_or(&String::from("InvalidId")),
                                             oneofopt.Value,
                                             oneofopt.Flags,
                                             oneofopt.Key
-                                        ).unwrap();
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2548,10 +2567,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::SuppressIf => {
                                 match framework_parser::ifr_supress_if(operation.Data.unwrap()) {
                                     Ok((_, supressif)) => {
-                                        write!(&mut text, 
-                                            "Flags: 0x{:X}", 
-                                            supressif.Flags
-                                        ).unwrap();
+                                        write!(&mut text, "Flags: 0x{:X}", supressif.Flags)
+                                            .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2566,11 +2583,12 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Hidden => {
                                 match framework_parser::ifr_hidden(operation.Data.unwrap()) {
                                     Ok((_, hidden)) => {
-                                        write!(&mut text, 
-                                            "Value: 0x{:X}, Key: 0x{:X}", 
-                                            hidden.Value,
-                                            hidden.Key
-                                        ).unwrap();
+                                        write!(
+                                            &mut text,
+                                            "Value: 0x{:X}, Key: 0x{:X}",
+                                            hidden.Value, hidden.Key
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2585,8 +2603,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::FormSet => {
                                 match framework_parser::ifr_form_set(operation.Data.unwrap()) {
                                     Ok((_, formset)) => {
-                                        write!(&mut text, 
-                                            "Title: {}, Help: {}, Guid: {}, CallbackHandle: 0x{:X}, Class: 0x{:X}, SubClass: 0x{:X}, NvDataSize: 0x{:X}", 
+                                        write!(&mut text,
+                                            "Title: {}, Help: {}, Guid: {}, CallbackHandle: 0x{:X}, Class: 0x{:X}, SubClass: 0x{:X}, NvDataSize: 0x{:X}",
                                             strings_map.get(&formset.TitleStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&formset.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             formset.Guid,
@@ -2609,8 +2627,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Ref => {
                                 match framework_parser::ifr_ref(operation.Data.unwrap()) {
                                     Ok((_, rf)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}", 
+                                        write!(&mut text,
+                                            "Prompt: {}, Help: {}, FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map.get(&rf.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&rf.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             rf.FormId,
@@ -2632,11 +2650,15 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_inconsistent_if(operation.Data.unwrap())
                                 {
                                     Ok((_, incif)) => {
-                                        write!(&mut text, 
-                                            "Popup: {}, Flags: 0x{:X}", 
-                                            strings_map.get(&incif.PopupStringId).unwrap_or(&String::from("InvalidId")),
+                                        write!(
+                                            &mut text,
+                                            "Popup: {}, Flags: 0x{:X}",
+                                            strings_map
+                                                .get(&incif.PopupStringId)
+                                                .unwrap_or(&String::from("InvalidId")),
                                             incif.Flags
-                                        ).unwrap();
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2649,11 +2671,12 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::EqIdVal => {
                                 match framework_parser::ifr_eq_id_val(operation.Data.unwrap()) {
                                     Ok((_, eqidval)) => {
-                                        write!(&mut text, 
-                                            "QuestionId: 0x{:X}, Value: 0x{:X}", 
-                                            eqidval.QuestionId,
-                                            eqidval.Value
-                                        ).unwrap();
+                                        write!(
+                                            &mut text,
+                                            "QuestionId: 0x{:X}, Value: 0x{:X}",
+                                            eqidval.QuestionId, eqidval.Value
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2666,11 +2689,12 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::EqIdId => {
                                 match framework_parser::ifr_eq_id_id(operation.Data.unwrap()) {
                                     Ok((_, eqidid)) => {
-                                        write!(&mut text, 
-                                            "QuestionId1: 0x{:X}, QuestionId2: 0x{:X}", 
-                                            eqidid.QuestionId1,
-                                            eqidid.QuestionId2
-                                        ).unwrap();
+                                        write!(
+                                            &mut text,
+                                            "QuestionId1: 0x{:X}, QuestionId2: 0x{:X}",
+                                            eqidid.QuestionId1, eqidid.QuestionId2
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2683,11 +2707,12 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::EqIdList => {
                                 match framework_parser::ifr_eq_id_list(operation.Data.unwrap()) {
                                     Ok((_, eqidlist)) => {
-                                        write!(&mut text, 
-                                            "QuestionId: 0x{:X}, Width: {}, List: {{", 
-                                            eqidlist.QuestionId,
-                                            eqidlist.Width
-                                        ).unwrap();
+                                        write!(
+                                            &mut text,
+                                            "QuestionId: 0x{:X}, Width: {}, List: {{",
+                                            eqidlist.QuestionId, eqidlist.Width
+                                        )
+                                        .unwrap();
                                         for item in &eqidlist.List {
                                             write!(&mut text, " 0x{:X},", *item).unwrap();
                                         }
@@ -2712,10 +2737,7 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::GrayOutIf => {
                                 match framework_parser::ifr_grayout_if(operation.Data.unwrap()) {
                                     Ok((_, grif)) => {
-                                        write!(&mut text, 
-                                            "Flags: 0x{:X}", 
-                                            grif.Flags
-                                        ).unwrap();
+                                        write!(&mut text, "Flags: 0x{:X}", grif.Flags).unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2728,8 +2750,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Date => {
                                 match framework_parser::ifr_date(operation.Data.unwrap()) {
                                     Ok((_, date)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, Min: {}, Max: {}, Step: {}, Default: {}", 
+                                        write!(&mut text,
+                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, Min: {}, Max: {}, Step: {}, Default: {}",
                                             strings_map.get(&date.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&date.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             date.QuestionId,
@@ -2753,8 +2775,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Time => {
                                 match framework_parser::ifr_time(operation.Data.unwrap()) {
                                     Ok((_, time)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, Min: {}, Max: {}, Step: {}, Default: {}", 
+                                        write!(&mut text,
+                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, Min: {}, Max: {}, Step: {}, Default: {}",
                                             strings_map.get(&time.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&time.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             time.QuestionId,
@@ -2778,8 +2800,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::String => {
                                 match framework_parser::ifr_string(operation.Data.unwrap()) {
                                     Ok((_, str)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, MinSize: {}, MaxSize: {}", 
+                                        write!(&mut text,
+                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, MinSize: {}, MaxSize: {}",
                                             strings_map.get(&str.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&str.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             str.QuestionId,
@@ -2801,10 +2823,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Label => {
                                 match framework_parser::ifr_label(operation.Data.unwrap()) {
                                     Ok((_, label)) => {
-                                        write!(&mut text, 
-                                            "LabelId: 0x{:X}", 
-                                            label.LabelId
-                                        ).unwrap();
+                                        write!(&mut text, "LabelId: 0x{:X}", label.LabelId)
+                                            .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2817,8 +2837,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::SaveDefaults => {
                                 match framework_parser::ifr_save_defaults(operation.Data.unwrap()) {
                                     Ok((_, sd)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}", 
+                                        write!(&mut text,
+                                            "Prompt: {}, Help: {}, FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map.get(&sd.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&sd.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             sd.FormId,
@@ -2839,8 +2859,8 @@ fn framework_ifr_extract(
                                     operation.Data.unwrap(),
                                 ) {
                                     Ok((_, rd)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}", 
+                                        write!(&mut text,
+                                            "Prompt: {}, Help: {}, FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map.get(&rd.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&rd.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             rd.FormId,
@@ -2859,12 +2879,16 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Banner => {
                                 match framework_parser::ifr_banner(operation.Data.unwrap()) {
                                     Ok((_, banner)) => {
-                                        write!(&mut text, 
-                                            "Title: {}, LineNumber: {}, Alignment: 0x{:X}", 
-                                            strings_map.get(&banner.TitleStringId).unwrap_or(&String::from("InvalidId")),
+                                        write!(
+                                            &mut text,
+                                            "Title: {}, LineNumber: {}, Alignment: 0x{:X}",
+                                            strings_map
+                                                .get(&banner.TitleStringId)
+                                                .unwrap_or(&String::from("InvalidId")),
                                             banner.LineNumber,
                                             banner.Alignment
-                                        ).unwrap();
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2877,12 +2901,20 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Inventory => {
                                 match framework_parser::ifr_inventory(operation.Data.unwrap()) {
                                     Ok((_, inventory)) => {
-                                        write!(&mut text, 
-                                            "Text: {}, TextTwo: {}, Help: {}", 
-                                            strings_map.get(&inventory.TextStringId).unwrap_or(&String::from("InvalidId")),
-                                            strings_map.get(&inventory.TextTwoStringId).unwrap_or(&String::from("InvalidId")),
-                                            strings_map.get(&inventory.HelpStringId).unwrap_or(&String::from("InvalidId"))
-                                        ).unwrap();
+                                        write!(
+                                            &mut text,
+                                            "Text: {}, TextTwo: {}, Help: {}",
+                                            strings_map
+                                                .get(&inventory.TextStringId)
+                                                .unwrap_or(&String::from("InvalidId")),
+                                            strings_map
+                                                .get(&inventory.TextTwoStringId)
+                                                .unwrap_or(&String::from("InvalidId")),
+                                            strings_map
+                                                .get(&inventory.HelpStringId)
+                                                .unwrap_or(&String::from("InvalidId"))
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2895,11 +2927,12 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::EqVarVal => {
                                 match framework_parser::ifr_eq_var_val(operation.Data.unwrap()) {
                                     Ok((_, eqvarval)) => {
-                                        write!(&mut text, 
-                                            "VariableId: 0x{:X}, Value: 0x{:X}", 
-                                            eqvarval.VariableId,
-                                            eqvarval.Value
-                                        ).unwrap();
+                                        write!(
+                                            &mut text,
+                                            "VariableId: 0x{:X}, Value: 0x{:X}",
+                                            eqvarval.VariableId, eqvarval.Value
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2912,8 +2945,8 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::OrderedList => {
                                 match framework_parser::ifr_ordered_list(operation.Data.unwrap()) {
                                     Ok((_, ol)) => {
-                                        write!(&mut text, 
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, MaxEntries: {}", 
+                                        write!(&mut text,
+                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, MaxEntries: {}",
                                             strings_map.get(&ol.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&ol.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             ol.QuestionId,
@@ -2931,13 +2964,12 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::VarStore => {
                                 match framework_parser::ifr_var_store(operation.Data.unwrap()) {
                                     Ok((_, vs)) => {
-                                        write!(&mut text, 
-                                            "VarstoreId: 0x{:X}, Guid: {} , Name: {}, Size: 0x{:X}", 
-                                            vs.VarStoreId,
-                                            vs.Guid,
-                                            vs.Name,
-                                            vs.Size
-                                        ).unwrap();
+                                        write!(
+                                            &mut text,
+                                            "VarstoreId: 0x{:X}, Guid: {} , Name: {}, Size: 0x{:X}",
+                                            vs.VarStoreId, vs.Guid, vs.Name, vs.Size
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2952,10 +2984,8 @@ fn framework_ifr_extract(
                                     operation.Data.unwrap(),
                                 ) {
                                     Ok((_, vss)) => {
-                                        write!(&mut text, 
-                                            "VarstoreId: 0x{:X}", 
-                                            vss.VarStoreId
-                                        ).unwrap();
+                                        write!(&mut text, "VarstoreId: 0x{:X}", vss.VarStoreId)
+                                            .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -2970,11 +3000,12 @@ fn framework_ifr_extract(
                                     operation.Data.unwrap(),
                                 ) {
                                     Ok((_, vssp)) => {
-                                        write!(&mut text, 
-                                            "VarstoreId: 0x{:X}, SecondaryVarStoreId: 0x{:X}", 
-                                            vssp.VarStoreId,
-                                            vssp.SecondaryVarStoreId
-                                        ).unwrap();
+                                        write!(
+                                            &mut text,
+                                            "VarstoreId: 0x{:X}, SecondaryVarStoreId: 0x{:X}",
+                                            vssp.VarStoreId, vssp.SecondaryVarStoreId
+                                        )
+                                        .unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:?}", operation.Data.unwrap())
@@ -3286,36 +3317,71 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                 .parse()
                 .expect("Can't parse form_package_number argument as a number");
             if form_package_num > uefi_forms.len() - 1 {
-                println!("Provided form_package_number argument {} is out of range [0..{}]", form_package_num, uefi_forms.len() - 1);
+                println!(
+                    "Provided form_package_number argument {} is out of range [0..{}]",
+                    form_package_num,
+                    uefi_forms.len() - 1
+                );
                 std::process::exit(4);
             }
             let string_package_num: usize = collected_args[4]
                 .parse()
                 .expect("Can't parse string_package_number argument as a number");
             if string_package_num > uefi_strings.len() - 1 {
-                println!("Provided string_package_number argument {} is out of range [0..{}]", string_package_num, uefi_strings.len() - 1);
+                println!(
+                    "Provided string_package_number argument {} is out of range [0..{}]",
+                    string_package_num,
+                    uefi_strings.len() - 1
+                );
                 std::process::exit(4);
             }
-            println!("Extracting UEFI HII form package #{} using UEFI HII string package #{}", form_package_num, string_package_num);
-            uefi_ifr_extract(path.as_os_str(), &data, &uefi_forms[form_package_num], form_package_num, &uefi_strings[string_package_num], string_package_num);
-        }
-        else if framework_ifr_found {
+            println!(
+                "Extracting UEFI HII form package #{} using UEFI HII string package #{}",
+                form_package_num, string_package_num
+            );
+            uefi_ifr_extract(
+                path.as_os_str(),
+                &data,
+                &uefi_forms[form_package_num],
+                form_package_num,
+                &uefi_strings[string_package_num],
+                string_package_num,
+            );
+        } else if framework_ifr_found {
             let form_package_num: usize = collected_args[3]
                 .parse()
                 .expect("Can't parse form_package_number argument as a number");
             if form_package_num > framework_forms.len() - 1 {
-                println!("Provided form_package_number argument {} is out of range [0..{}]", form_package_num, uefi_forms.len() - 1);
+                println!(
+                    "Provided form_package_number argument {} is out of range [0..{}]",
+                    form_package_num,
+                    uefi_forms.len() - 1
+                );
                 std::process::exit(4);
             }
             let string_package_num: usize = collected_args[4]
                 .parse()
                 .expect("Can't parse string_package_number argument as a number");
             if string_package_num > framework_strings.len() - 1 {
-                println!("Provided string_package_number argument {} is out of range [0..{}]", string_package_num, uefi_strings.len() - 1);
+                println!(
+                    "Provided string_package_number argument {} is out of range [0..{}]",
+                    string_package_num,
+                    uefi_strings.len() - 1
+                );
                 std::process::exit(4);
             }
-            println!("Extracting Framework HII form package #{} using Framework HII string package #{}", form_package_num, string_package_num);
-            framework_ifr_extract(path.as_os_str(), &data, &framework_forms[form_package_num], form_package_num, &framework_strings[string_package_num], string_package_num);
+            println!(
+                "Extracting Framework HII form package #{} using Framework HII string package #{}",
+                form_package_num, string_package_num
+            );
+            framework_ifr_extract(
+                path.as_os_str(),
+                &data,
+                &framework_forms[form_package_num],
+                form_package_num,
+                &framework_strings[string_package_num],
+                string_package_num,
+            );
         }
     } else {
         println!("Invalid arguments");
