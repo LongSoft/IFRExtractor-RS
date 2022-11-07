@@ -635,6 +635,147 @@ impl From<u8> for IfrOpcode {
     }
 }
 
+impl Into<u8> for IfrOpcode {
+    fn into(self) -> u8 {
+        match self {
+            IfrOpcode::Form => 0x01,
+            IfrOpcode::Subtitle => 0x02,
+            IfrOpcode::Text => 0x03,
+            IfrOpcode::Image => 0x04,
+            IfrOpcode::OneOf => 0x05,
+            IfrOpcode::CheckBox => 0x06,
+            IfrOpcode::Numeric => 0x07,
+            IfrOpcode::Password => 0x08,
+            IfrOpcode::OneOfOption => 0x09,
+            IfrOpcode::SuppressIf => 0x0A,
+            IfrOpcode::Locked => 0x0B,
+            IfrOpcode::Action => 0x0C,
+            IfrOpcode::ResetButton => 0x0D,
+            IfrOpcode::FormSet => 0x0E,
+            IfrOpcode::Ref => 0x0F,
+            IfrOpcode::NoSubmitIf => 0x10,
+            IfrOpcode::InconsistentIf => 0x11,
+            IfrOpcode::EqIdVal => 0x12,
+            IfrOpcode::EqIdId => 0x13,
+            IfrOpcode::EqIdValList => 0x14,
+            IfrOpcode::And => 0x15,
+            IfrOpcode::Or => 0x16,
+            IfrOpcode::Not => 0x17,
+            IfrOpcode::Rule => 0x18,
+            IfrOpcode::GrayOutIf => 0x19,
+            IfrOpcode::Date => 0x1A,
+            IfrOpcode::Time => 0x1B,
+            IfrOpcode::String => 0x1C,
+            IfrOpcode::Refresh => 0x1D,
+            IfrOpcode::DisableIf => 0x1E,
+            IfrOpcode::Animation => 0x1F,
+            IfrOpcode::ToLower => 0x20,
+            IfrOpcode::ToUpper => 0x21,
+            IfrOpcode::Map => 0x22,
+            IfrOpcode::OrderedList => 0x23,
+            IfrOpcode::VarStore => 0x24,
+            IfrOpcode::VarStoreNameValue => 0x25,
+            IfrOpcode::VarStoreEfi => 0x26,
+            IfrOpcode::VarStoreDevice => 0x27,
+            IfrOpcode::Version => 0x28,
+            IfrOpcode::End => 0x29,
+            IfrOpcode::Match => 0x2A,
+            IfrOpcode::Get => 0x2B,
+            IfrOpcode::Set => 0x2C,
+            IfrOpcode::Read => 0x2D,
+            IfrOpcode::Write => 0x2E,
+            IfrOpcode::Equal => 0x2F,
+            IfrOpcode::NotEqual => 0x30,
+            IfrOpcode::GreaterThan => 0x31,
+            IfrOpcode::GreaterEqual => 0x32,
+            IfrOpcode::LessThan => 0x33,
+            IfrOpcode::LessEqual => 0x34,
+            IfrOpcode::BitwiseAnd => 0x35,
+            IfrOpcode::BitwiseOr => 0x36,
+            IfrOpcode::BitwiseNot => 0x37,
+            IfrOpcode::ShiftLeft => 0x38,
+            IfrOpcode::ShiftRight => 0x39,
+            IfrOpcode::Add => 0x3A,
+            IfrOpcode::Substract => 0x3B,
+            IfrOpcode::Multiply => 0x3C,
+            IfrOpcode::Divide => 0x3D,
+            IfrOpcode::Modulo => 0x3E,
+            IfrOpcode::RuleRef => 0x3F,
+            IfrOpcode::QuestionRef1 => 0x40,
+            IfrOpcode::QuestionRef2 => 0x41,
+            IfrOpcode::Uint8 => 0x42,
+            IfrOpcode::Uint16 => 0x43,
+            IfrOpcode::Uint32 => 0x44,
+            IfrOpcode::Uint64 => 0x45,
+            IfrOpcode::True => 0x46,
+            IfrOpcode::False => 0x47,
+            IfrOpcode::ToUint => 0x48,
+            IfrOpcode::ToString => 0x49,
+            IfrOpcode::ToBoolean => 0x4A,
+            IfrOpcode::Mid => 0x4B,
+            IfrOpcode::Find => 0x4C,
+            IfrOpcode::Token => 0x4D,
+            IfrOpcode::StringRef1 => 0x4E,
+            IfrOpcode::StringRef2 => 0x4F,
+            IfrOpcode::Conditional => 0x50,
+            IfrOpcode::QuestionRef3 => 0x51,
+            IfrOpcode::Zero => 0x52,
+            IfrOpcode::One => 0x53,
+            IfrOpcode::Ones => 0x54,
+            IfrOpcode::Undefined => 0x55,
+            IfrOpcode::Length => 0x56,
+            IfrOpcode::Dup => 0x57,
+            IfrOpcode::This => 0x58,
+            IfrOpcode::Span => 0x59,
+            IfrOpcode::Value => 0x5A,
+            IfrOpcode::Default => 0x5B,
+            IfrOpcode::DefaultStore => 0x5C,
+            IfrOpcode::FormMap => 0x5D,
+            IfrOpcode::Catenate => 0x5E,
+            IfrOpcode::Guid => 0x5F,
+            IfrOpcode::Security => 0x60,
+            IfrOpcode::ModalTag => 0x61,
+            IfrOpcode::RefreshId => 0x62,
+            IfrOpcode::WarningIf => 0x63,
+            IfrOpcode::Match2 => 0x64,
+            IfrOpcode::Unknown(m) => m,
+        }
+    }
+}
+
+impl fmt::Display for IfrOperation<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let opcode: u8 = self.OpCode.into();
+        let raw_opcode = 
+        if self.ScopeStart {
+            opcode | 0x80
+        } else {
+            opcode
+        }; 
+
+        write!(
+            f,
+            "{{ {:02X} {:02X}",
+            raw_opcode,
+            self.Length,
+        )
+        .unwrap();
+
+        if let Some(bytes) = self.Data {
+            for byte in bytes {
+                write!(
+                    f,
+                    " {:02X}",
+                    byte
+                )
+                .unwrap();
+            }
+        }
+
+        write!(f, " }}")
+    }
+}
+
 //
 //0x01 => IfrOpcode::Form
 //

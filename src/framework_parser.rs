@@ -329,6 +329,87 @@ impl From<u8> for IfrOpcode {
     }
 }
 
+impl Into<u8> for IfrOpcode {
+    fn into(self) -> u8 {
+        match self {
+            IfrOpcode::Form => 0x01,
+            IfrOpcode::Subtitle => 0x02,
+            IfrOpcode::Text => 0x03,
+            IfrOpcode::Graphic => 0x04,
+            IfrOpcode::OneOf => 0x05,
+            IfrOpcode::CheckBox => 0x06,
+            IfrOpcode::Numeric => 0x07,
+            IfrOpcode::Password => 0x08,
+            IfrOpcode::OneOfOption => 0x09,
+            IfrOpcode::SuppressIf => 0x0A,
+            IfrOpcode::EndForm => 0x0B,
+            IfrOpcode::Hidden => 0x0C,
+            IfrOpcode::EndFormSet => 0x0D,
+            IfrOpcode::FormSet => 0x0E,
+            IfrOpcode::Ref => 0x0F,
+            IfrOpcode::End => 0x10,
+            IfrOpcode::InconsistentIf => 0x11,
+            IfrOpcode::EqIdVal => 0x12,
+            IfrOpcode::EqIdId => 0x13,
+            IfrOpcode::EqIdList => 0x14,
+            IfrOpcode::And => 0x15,
+            IfrOpcode::Or => 0x16,
+            IfrOpcode::Not => 0x17,
+            IfrOpcode::EndIf => 0x18,
+            IfrOpcode::GrayOutIf => 0x19,
+            IfrOpcode::Date => 0x1A,
+            IfrOpcode::Time => 0x1B,
+            IfrOpcode::String => 0x1C,
+            IfrOpcode::Label => 0x1D,
+            IfrOpcode::SaveDefaults => 0x1E,
+            IfrOpcode::RestoreDefaults => 0x1F,
+            IfrOpcode::Banner => 0x20,
+            IfrOpcode::Inventory => 0x21,
+            IfrOpcode::EqVarVal => 0x22,
+            IfrOpcode::OrderedList => 0x23,
+            IfrOpcode::VarStore => 0x24,
+            IfrOpcode::VarStoreSelect => 0x25,
+            IfrOpcode::VarStoreSelectPair => 0x26,
+            IfrOpcode::True => 0x27,
+            IfrOpcode::False => 0x28,
+            IfrOpcode::Greater => 0x29,
+            IfrOpcode::GreaterEqual => 0x2A,
+            IfrOpcode::OemDefined => 0x2B,
+            IfrOpcode::Oem => 0xFE,
+            IfrOpcode::NvAccessCommand => 0xFF,
+            IfrOpcode::Unknown(m) => m,
+        }
+    }
+}
+
+impl fmt::Display for IfrOperation<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let opcode: u8 = self.OpCode.into();
+
+        write!(
+            f,
+            "{{ {:02X} {:02X}",
+            opcode,
+            self.Length,
+        )
+        .unwrap();
+
+        if let Some(bytes) = self.Data {
+            for byte in bytes {
+                write!(
+                    f,
+                    " {:02X}",
+                    byte
+                )
+                .unwrap();
+            }
+        }
+
+        write!(f, " }}")
+    }
+}
+
+
 //
 //0x01 => IfrOpcode::Form
 //
