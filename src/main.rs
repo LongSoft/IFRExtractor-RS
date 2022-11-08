@@ -1437,12 +1437,23 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::VarStoreEfi => {
                                 match uefi_parser::ifr_var_store_efi(operation.Data.unwrap()) {
                                     Ok((_, var_store)) => {
-                                        write!(&mut text, "GUID: {}, VarStoreId: {}, Attributes: 0x{:X}, Size: 0x{:X}, Name: \"{}\"", 
+                                        write!(&mut text, "GUID: {}, VarStoreId: {}, Attributes: 0x{:X}", 
                                                 var_store.Guid,
                                                 var_store.VarStoreId,
-                                                var_store.Attributes,
-                                                var_store.Size,
-                                                var_store.Name).unwrap();
+                                                var_store.Attributes
+                                        ).unwrap();
+
+                                        if let Some(size) = var_store.Size {
+                                            write!(&mut text, ", Size: 0x{:X}", 
+                                                size
+                                            ).unwrap();
+                                        }
+
+                                        if let Some(name) = var_store.Name {
+                                            write!(&mut text, ", Name: \"{}\"", 
+                                                name
+                                            ).unwrap();
+                                        }
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())

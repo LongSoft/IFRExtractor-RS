@@ -1718,24 +1718,28 @@ pub struct IfrVarStoreEfi {
     pub VarStoreId: u16,
     pub Guid: Guid,
     pub Attributes: u32,
-    pub Size: u16,
-    pub Name: String,
+    pub Size: Option<u16>,
+    pub Name: Option<String>,
 }
 
 pub fn ifr_var_store_efi(input: &[u8]) -> IResult<&[u8], IfrVarStoreEfi> {
     do_parse!(
         input,
-        vsid: le_u16
+        r: peek!(rest)
+            >> vsid: le_u16
             >> g: guid
             >> atr: le_u32
-            >> size: le_u16
-            >> name: take_until_and_consume!("\x00")
+            >> size: cond_with_error!(r.len() >= 24, le_u16)
+            >> name: cond_with_error!(r.len() >= 26, take_until_and_consume!("\x00"))
             >> (IfrVarStoreEfi {
                 VarStoreId: vsid,
                 Guid: g,
                 Attributes: atr,
                 Size: size,
-                Name: String::from_utf8_lossy(&name).to_string(),
+                Name: match name {
+                    Some(n) => Some(String::from_utf8_lossy(&n).to_string()),
+                    None => None
+                }
             })
     )
 }
