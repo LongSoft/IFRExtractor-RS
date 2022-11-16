@@ -1128,7 +1128,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Ref => {
                                 match uefi_parser::ifr_ref(operation.Data.unwrap()) {
                                     Ok((_, rf)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreInfo: 0x{:X} ", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreInfo: 0x{:X}", 
                                                 strings_map.get(&rf.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&rf.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 rf.QuestionFlags,
