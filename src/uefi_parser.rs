@@ -746,18 +746,18 @@ impl Into<u8> for IfrOpcode {
 impl fmt::Display for IfrOperation<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let opcode: u8 = self.OpCode.into();
-        let raw_opcode = 
+        let raw_len = 
         if self.ScopeStart {
-            opcode | 0x80
+            self.Length | 0x80
         } else {
-            opcode
+            self.Length
         }; 
 
         write!(
             f,
             "{{ {:02X} {:02X}",
-            raw_opcode,
-            self.Length,
+            opcode,
+            raw_len,
         )
         .unwrap();
 
@@ -1142,18 +1142,18 @@ impl fmt::Display for IfrTypeValue {
             IfrTypeValue::Boolean(x) => write!(f, "{}", x),
             IfrTypeValue::Time(x) => write!(f, "{:02}:{:02}:{:02}", x.Hour, x.Minute, x.Second),
             IfrTypeValue::Date(x) => write!(f, "{:04}-{:02}-{:02}", x.Year, x.Month, x.Day),
-            IfrTypeValue::String(x) => write!(f, "String: {}", x),
+            IfrTypeValue::String(x) => write!(f, "StringId: 0x{:X}", x),
             IfrTypeValue::Other => write!(f, "Other"),
             IfrTypeValue::Undefined => write!(f, "Undefined"),
-            IfrTypeValue::Action(x) => write!(f, "Action: {}", x),
+            IfrTypeValue::Action(x) => write!(f, "Action: 0x{:X}", x),
             IfrTypeValue::Buffer(ref x) => write!(f, "Buffer: {:?}", x),
             IfrTypeValue::Ref(x) => {
                 write!(f, "Ref").unwrap();
                 if let Some(y) = x.QuestionId {
-                    write!(f, " QuestionId: {}", y).unwrap();
+                    write!(f, " QuestionId: 0x{:X}", y).unwrap();
                 }
                 if let Some(y) = x.FormId {
-                    write!(f, " FormId: {}", y).unwrap();
+                    write!(f, " FormId: 0x{:X}", y).unwrap();
                 }
                 if let Some(y) = x.FormSetGuid {
                     write!(f, " FormSetGuid: {}", y).unwrap();
@@ -1163,7 +1163,7 @@ impl fmt::Display for IfrTypeValue {
                 }
                 write!(f, "")
             }
-            IfrTypeValue::Unknown(x) => write!(f, "Unknown: {}", x),
+            IfrTypeValue::Unknown(x) => write!(f, "Unknown: {:?}", x),
         }
     }
 }

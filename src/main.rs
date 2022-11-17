@@ -759,7 +759,7 @@ fn uefi_ifr_extract(
                                     Ok((_, form)) => {
                                         write!(
                                             &mut text,
-                                            "FormId: {}, Title: \"{}\"",
+                                            "FormId: 0x{:X}, Title: \"{}\"",
                                             form.FormId,
                                             strings_map
                                                 .get(&form.TitleStringId)
@@ -828,12 +828,12 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Image => {
                                 match uefi_parser::ifr_image(operation.Data.unwrap()) {
                                     Ok((_, image)) => {
-                                        write!(&mut text, "ImageId: {}", image.ImageId).unwrap();
+                                        write!(&mut text, "ImageId: 0x{:X}", image.ImageId).unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Iamge parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Image parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
                                     }
                                 }
                             }
@@ -841,7 +841,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::OneOf => {
                                 match uefi_parser::ifr_one_of(operation.Data.unwrap()) {
                                     Ok((_, onf)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}, ", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}, ", 
                                                 strings_map.get(&onf.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&onf.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 onf.QuestionFlags,
@@ -852,7 +852,7 @@ fn uefi_ifr_extract(
                                         if let Some(_) = onf.MinMaxStepData8[0] {
                                             write!(
                                                 &mut text,
-                                                "Min: {}, Max: {}, Step: {}",
+                                                "Size: 8, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
                                                 onf.MinMaxStepData8[0].unwrap(),
                                                 onf.MinMaxStepData8[1].unwrap(),
                                                 onf.MinMaxStepData8[2].unwrap()
@@ -862,7 +862,7 @@ fn uefi_ifr_extract(
                                         if let Some(_) = onf.MinMaxStepData16[0] {
                                             write!(
                                                 &mut text,
-                                                "Min: {}, Max: {}, Step: {}",
+                                                "Size: 16, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
                                                 onf.MinMaxStepData16[0].unwrap(),
                                                 onf.MinMaxStepData16[1].unwrap(),
                                                 onf.MinMaxStepData16[2].unwrap()
@@ -872,7 +872,7 @@ fn uefi_ifr_extract(
                                         if let Some(_) = onf.MinMaxStepData32[0] {
                                             write!(
                                                 &mut text,
-                                                "Min: {}, Max: {}, Step: {}",
+                                                "Size: 32, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
                                                 onf.MinMaxStepData32[0].unwrap(),
                                                 onf.MinMaxStepData32[1].unwrap(),
                                                 onf.MinMaxStepData32[2].unwrap()
@@ -882,7 +882,7 @@ fn uefi_ifr_extract(
                                         if let Some(_) = onf.MinMaxStepData64[0] {
                                             write!(
                                                 &mut text,
-                                                "Min: {}, Max: {}, Step: {}",
+                                                "Size: 64, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
                                                 onf.MinMaxStepData64[0].unwrap(),
                                                 onf.MinMaxStepData64[1].unwrap(),
                                                 onf.MinMaxStepData64[2].unwrap()
@@ -901,7 +901,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::CheckBox => {
                                 match uefi_parser::ifr_check_box(operation.Data.unwrap()) {
                                     Ok((_, cb)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}", 
                                                 strings_map.get(&cb.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&cb.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 cb.QuestionFlags,
@@ -921,7 +921,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Numeric => {
                                 match uefi_parser::ifr_numeric(operation.Data.unwrap()) {
                                     Ok((_, num)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}, ", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}, ", 
                                                 strings_map.get(&num.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&num.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 num.QuestionFlags,
@@ -932,7 +932,7 @@ fn uefi_ifr_extract(
                                         if let Some(_) = num.MinMaxStepData8[0] {
                                             write!(
                                                 &mut text,
-                                                "Min: {}, Max: {}, Step: {}",
+                                                "Size: 8, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
                                                 num.MinMaxStepData8[0].unwrap(),
                                                 num.MinMaxStepData8[1].unwrap(),
                                                 num.MinMaxStepData8[2].unwrap()
@@ -942,7 +942,7 @@ fn uefi_ifr_extract(
                                         if let Some(_) = num.MinMaxStepData16[0] {
                                             write!(
                                                 &mut text,
-                                                "Min: {}, Max: {}, Step: {}",
+                                                "Size: 16, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
                                                 num.MinMaxStepData16[0].unwrap(),
                                                 num.MinMaxStepData16[1].unwrap(),
                                                 num.MinMaxStepData16[2].unwrap()
@@ -952,7 +952,7 @@ fn uefi_ifr_extract(
                                         if let Some(_) = num.MinMaxStepData32[0] {
                                             write!(
                                                 &mut text,
-                                                "Min: {}, Max: {}, Step: {}",
+                                                "Size: 32, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
                                                 num.MinMaxStepData32[0].unwrap(),
                                                 num.MinMaxStepData32[1].unwrap(),
                                                 num.MinMaxStepData32[2].unwrap()
@@ -962,7 +962,7 @@ fn uefi_ifr_extract(
                                         if let Some(_) = num.MinMaxStepData64[0] {
                                             write!(
                                                 &mut text,
-                                                "Min: {}, Max: {}, Step: {}",
+                                                "Size: 64, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
                                                 num.MinMaxStepData64[0].unwrap(),
                                                 num.MinMaxStepData64[1].unwrap(),
                                                 num.MinMaxStepData64[2].unwrap()
@@ -981,7 +981,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Password => {
                                 match uefi_parser::ifr_password(operation.Data.unwrap()) {
                                     Ok((_, pw)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreInfo: 0x{:X}, MinSize: {}, MaxSize: {}", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreInfo: 0x{:X}, MinSize: 0x{:X}, MaxSize: 0x{:X}", 
                                                 strings_map.get(&pw.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&pw.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 pw.QuestionFlags,
@@ -1051,7 +1051,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Action => {
                                 match uefi_parser::ifr_action(operation.Data.unwrap()) {
                                     Ok((_, act)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreInfo: 0x{:X}", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreInfo: 0x{:X}", 
                                                 strings_map.get(&act.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&act.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 act.QuestionFlags,
@@ -1061,7 +1061,7 @@ fn uefi_ifr_extract(
                                         if let Some(x) = act.ConfigStringId {
                                             write!(
                                                 &mut text,
-                                                ", QuestionConfig: {}",
+                                                ", QuestionConfig: \"{}\"",
                                                 strings_map
                                                     .get(&x)
                                                     .unwrap_or(&String::from("InvalidId"))
@@ -1082,7 +1082,7 @@ fn uefi_ifr_extract(
                                     Ok((_, rst)) => {
                                         write!(
                                             &mut text,
-                                            "Prompt: \"{}\", Help: \"{}\", DefaultId: {}",
+                                            "Prompt: \"{}\", Help: \"{}\", DefaultId: 0x{:X}",
                                             strings_map
                                                 .get(&rst.PromptStringId)
                                                 .unwrap_or(&String::from("InvalidId")),
@@ -1106,7 +1106,7 @@ fn uefi_ifr_extract(
                                     Ok((_, form_set)) => {
                                         write!(
                                             &mut text,
-                                            "GUID: {}, Title: \"{}\", Help: \"{}\"",
+                                            "Guid: {}, Title: \"{}\", Help: \"{}\"",
                                             form_set.Guid,
                                             strings_map
                                                 .get(&form_set.TitleStringId)
@@ -1128,7 +1128,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Ref => {
                                 match uefi_parser::ifr_ref(operation.Data.unwrap()) {
                                     Ok((_, rf)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreInfo: 0x{:X}", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreInfo: 0x{:X}", 
                                                 strings_map.get(&rf.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&rf.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 rf.QuestionFlags,
@@ -1136,16 +1136,16 @@ fn uefi_ifr_extract(
                                                 rf.VarStoreId,
                                                 rf.VarStoreInfo).unwrap();
                                         if let Some(x) = rf.FormId {
-                                            write!(&mut text, ", FormId: {}", x).unwrap();
+                                            write!(&mut text, ", FormId: 0x{:X}", x).unwrap();
                                         }
                                         if let Some(x) = rf.RefQuestionId {
-                                            write!(&mut text, ", RefQuestionId: {}", x).unwrap();
+                                            write!(&mut text, ", RefQuestionId: 0x{:X}", x).unwrap();
                                         }
                                         if let Some(x) = rf.FormSetGuid {
                                             write!(&mut text, ", FormSetGuid: {}", x).unwrap();
                                         }
                                         if let Some(x) = rf.DevicePathId {
-                                            write!(&mut text, ", DevicePathId: {}", x).unwrap();
+                                            write!(&mut text, ", DevicePathId: 0x{:X}", x).unwrap();
                                         }
                                     }
                                     Err(e) => {
@@ -1201,7 +1201,7 @@ fn uefi_ifr_extract(
                                     Ok((_, eq)) => {
                                         write!(
                                             &mut text,
-                                            "QuestionId: {}, Value: {}",
+                                            "QuestionId: 0x{:X}, Value: 0x{:X}",
                                             eq.QuestionId, eq.Value
                                         )
                                         .unwrap();
@@ -1219,7 +1219,7 @@ fn uefi_ifr_extract(
                                     Ok((_, eq)) => {
                                         write!(
                                             &mut text,
-                                            "QuestionId: {}, OtherQuestionId: {}",
+                                            "QuestionId: 0x{:X}, OtherQuestionId: 0x{:X}",
                                             eq.QuestionId, eq.OtherQuestionId
                                         )
                                         .unwrap();
@@ -1237,7 +1237,7 @@ fn uefi_ifr_extract(
                                     Ok((_, eql)) => {
                                         write!(
                                             &mut text,
-                                            "QuestionId: {}, Values: {:?}",
+                                            "QuestionId: 0x{:X}, Values: {:?}",
                                             eql.QuestionId, eql.Values
                                         )
                                         .unwrap();
@@ -1259,7 +1259,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Rule => {
                                 match uefi_parser::ifr_rule(operation.Data.unwrap()) {
                                     Ok((_, rule)) => {
-                                        write!(&mut text, "RuleId: {}", rule.RuleId).unwrap();
+                                        write!(&mut text, "RuleId: 0x{:X}", rule.RuleId).unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
@@ -1274,7 +1274,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Date => {
                                 match uefi_parser::ifr_date(operation.Data.unwrap()) {
                                     Ok((_, dt)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreInfo: 0x{:X}, Flags: 0x{:X}", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreInfo: 0x{:X}, Flags: 0x{:X}", 
                                                 strings_map.get(&dt.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&dt.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 dt.QuestionFlags,
@@ -1294,7 +1294,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Time => {
                                 match uefi_parser::ifr_time(operation.Data.unwrap()) {
                                     Ok((_, time)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreInfo: 0x{:X}, Flags: 0x{:X}", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreInfo: 0x{:X}, Flags: 0x{:X}", 
                                                 strings_map.get(&time.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&time.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 time.QuestionFlags,
@@ -1314,7 +1314,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::String => {
                                 match uefi_parser::ifr_string(operation.Data.unwrap()) {
                                     Ok((_, st)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreInfo: 0x{:X}, MinSize: {}, MaxSize: {}, Flags: 0x{:X}", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreInfo: 0x{:X}, MinSize: 0x{:X}, MaxSize: 0x{:X}, Flags: 0x{:X}", 
                                                 strings_map.get(&st.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&st.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 st.QuestionFlags,
@@ -1338,7 +1338,7 @@ fn uefi_ifr_extract(
                                     Ok((_, refr)) => {
                                         write!(
                                             &mut text,
-                                            "RefreshInterval: {}",
+                                            "RefreshInterval: 0x{:X}",
                                             refr.RefreshInterval
                                         )
                                         .unwrap();
@@ -1356,7 +1356,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Animation => {
                                 match uefi_parser::ifr_animation(operation.Data.unwrap()) {
                                     Ok((_, anim)) => {
-                                        write!(&mut text, "AnimationId: {}", anim.AnimationId)
+                                        write!(&mut text, "AnimationId: 0x{:X}", anim.AnimationId)
                                             .unwrap();
                                     }
                                     Err(e) => {
@@ -1376,7 +1376,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::OrderedList => {
                                 match uefi_parser::ifr_ordered_list(operation.Data.unwrap()) {
                                     Ok((_, ol)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: {}, VarStoreId: {}, VarStoreOffset: 0x{:X}, MaxContainers: {}, Flags: 0x{:X}", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreOffset: 0x{:X}, MaxContainers: 0x{:X}, Flags: 0x{:X}", 
                                                 strings_map.get(&ol.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&ol.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 ol.QuestionFlags,
@@ -1399,7 +1399,7 @@ fn uefi_ifr_extract(
                                     Ok((_, var_store)) => {
                                         write!(
                                             &mut text,
-                                            "GUID: {}, VarStoreId: {}, Size: 0x{:X}, Name: \"{}\"",
+                                            "Guid: {}, VarStoreId: 0x{:X}, Size: 0x{:X}, Name: \"{}\"",
                                             var_store.Guid,
                                             var_store.VarStoreId,
                                             var_store.Size,
@@ -1421,7 +1421,7 @@ fn uefi_ifr_extract(
                                     Ok((_, var_store)) => {
                                         write!(
                                             &mut text,
-                                            "GUID: {}, VarStoreId: {}",
+                                            "Guid: {}, VarStoreId: 0x{:X}",
                                             var_store.Guid, var_store.VarStoreId
                                         )
                                         .unwrap();
@@ -1437,7 +1437,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::VarStoreEfi => {
                                 match uefi_parser::ifr_var_store_efi(operation.Data.unwrap()) {
                                     Ok((_, var_store)) => {
-                                        write!(&mut text, "GUID: {}, VarStoreId: {}, Attributes: 0x{:X}", 
+                                        write!(&mut text, "Guid: {}, VarStoreId: 0x{:X}, Attributes: 0x{:X}", 
                                                 var_store.Guid,
                                                 var_store.VarStoreId,
                                                 var_store.Attributes
@@ -1494,7 +1494,7 @@ fn uefi_ifr_extract(
                                     Ok((_, get)) => {
                                         write!(
                                             &mut text,
-                                            "VarStoreId: {}, VarStoreInfo: {}, VarStoreType: {}",
+                                            "VarStoreId: 0x{:X}, VarStoreInfo: 0x{:X}, VarStoreType: 0x{:X}",
                                             get.VarStoreId, get.VarStoreInfo, get.VarStoreType
                                         )
                                         .unwrap();
@@ -1512,7 +1512,7 @@ fn uefi_ifr_extract(
                                     Ok((_, set)) => {
                                         write!(
                                             &mut text,
-                                            "VarStoreId: {}, VarStoreInfo: {}, VarStoreType: {}",
+                                            "VarStoreId: 0x{:X}, VarStoreInfo: 0x{:X}, VarStoreType: 0x{:X}",
                                             set.VarStoreId, set.VarStoreInfo, set.VarStoreType
                                         )
                                         .unwrap();
@@ -1564,7 +1564,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::RuleRef => {
                                 match uefi_parser::ifr_rule_ref(operation.Data.unwrap()) {
                                     Ok((_, rule)) => {
-                                        write!(&mut text, "RuleId: {}", rule.RuleId).unwrap();
+                                        write!(&mut text, "RuleId: 0x{:X}", rule.RuleId).unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
@@ -1577,7 +1577,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::QuestionRef1 => {
                                 match uefi_parser::ifr_question_ref_1(operation.Data.unwrap()) {
                                     Ok((_, qr)) => {
-                                        write!(&mut text, "QuestionId: {}", qr.QuestionId).unwrap();
+                                        write!(&mut text, "QuestionId: 0x{:X}", qr.QuestionId).unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
@@ -1592,7 +1592,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Uint8 => {
                                 match uefi_parser::ifr_uint8(operation.Data.unwrap()) {
                                     Ok((_, u)) => {
-                                        write!(&mut text, "Value: {}", u.Value).unwrap();
+                                        write!(&mut text, "Value: 0x{:X}", u.Value).unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
@@ -1605,7 +1605,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Uint16 => {
                                 match uefi_parser::ifr_uint16(operation.Data.unwrap()) {
                                     Ok((_, u)) => {
-                                        write!(&mut text, "Value: {}", u.Value).unwrap();
+                                        write!(&mut text, "Value: 0x{:X}", u.Value).unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
@@ -1618,7 +1618,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Uint32 => {
                                 match uefi_parser::ifr_uint32(operation.Data.unwrap()) {
                                     Ok((_, u)) => {
-                                        write!(&mut text, "Value: {}", u.Value).unwrap();
+                                        write!(&mut text, "Value: 0x{:X}", u.Value).unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
@@ -1631,7 +1631,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Uint64 => {
                                 match uefi_parser::ifr_uint64(operation.Data.unwrap()) {
                                     Ok((_, u)) => {
-                                        write!(&mut text, "Value: {}", u.Value).unwrap();
+                                        write!(&mut text, "Value: 0x{:X}", u.Value).unwrap();
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
@@ -1766,7 +1766,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Default => {
                                 match uefi_parser::ifr_default(operation.Data.unwrap()) {
                                     Ok((_, def)) => {
-                                        write!(&mut text, "DefaultId: {} ", def.DefaultId).unwrap();
+                                        write!(&mut text, "DefaultId: 0x{:X} ", def.DefaultId).unwrap();
                                         match def.Value {
                                             uefi_parser::IfrTypeValue::String(x) => {
                                                 write!(
@@ -1806,7 +1806,7 @@ fn uefi_ifr_extract(
                                     Ok((_, default_store)) => {
                                         write!(
                                             &mut text,
-                                            "DefaultId: {}, Name: \"{}\"",
+                                            "DefaultId: 0x{:X}, Name: \"{}\"",
                                             default_store.DefaultId,
                                             strings_map
                                                 .get(&default_store.NameStringId)
@@ -1825,11 +1825,11 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::FormMap => {
                                 match uefi_parser::ifr_form_map(operation.Data.unwrap()) {
                                     Ok((_, form_map)) => {
-                                        write!(&mut text, "FormId: {}", form_map.FormId).unwrap();
+                                        write!(&mut text, "FormId: 0x{:X}", form_map.FormId).unwrap();
                                         for method in form_map.Methods {
                                             write!(
                                                 &mut text,
-                                                "| GUID: {}, Method: \"{}\"",
+                                                "| Guid: {}, Method: \"{}\"",
                                                 method.MethodIdentifier,
                                                 strings_map
                                                     .get(&method.MethodTitleId)
@@ -1867,7 +1867,7 @@ fn uefi_ifr_extract(
                                                                     edk2.Data,
                                                                 )
                                                             {
-                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, Title: \"{}\", LineNumber: {}, Alignment: {} ", 
+                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, Title: \"{}\", LineNumber: 0x{:X}, Alignment: 0x{:X} ", 
                                                                     guid.Guid,
                                                                     edk2.ExtendedOpCode,
                                                                     strings_map.get(&banner.TitleId).unwrap_or(&String::from("InvalidId")),
@@ -1878,7 +1878,7 @@ fn uefi_ifr_extract(
                                                         }
                                                         uefi_parser::IfrEdk2ExtendOpCode::Label => {
                                                             if edk2.Data.len() == 2 {
-                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, LabelNumber: {}", 
+                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, LabelNumber: 0x{:X}", 
                                                                         guid.Guid,
                                                                         edk2.ExtendedOpCode,
                                                                         edk2.Data[1] as u16 * 100 + edk2.Data[0] as u16).unwrap();
@@ -1887,7 +1887,7 @@ fn uefi_ifr_extract(
                                                         }
                                                         uefi_parser::IfrEdk2ExtendOpCode::Timeout => {
                                                             if edk2.Data.len() == 2 {
-                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, Timeout: {}", 
+                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, Timeout: 0x{:X}", 
                                                                         guid.Guid,
                                                                         edk2.ExtendedOpCode,
                                                                         edk2.Data[1] as u16 * 100 + edk2.Data[0] as u16).unwrap();
@@ -1896,7 +1896,7 @@ fn uefi_ifr_extract(
                                                         }
                                                         uefi_parser::IfrEdk2ExtendOpCode::Class => {
                                                             if edk2.Data.len() == 2 {
-                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, Class: {}", 
+                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, Class: 0x{:X}", 
                                                                         guid.Guid,
                                                                         edk2.ExtendedOpCode,
                                                                         edk2.Data[1] as u16 * 100 + edk2.Data[0] as u16).unwrap();
@@ -1905,7 +1905,7 @@ fn uefi_ifr_extract(
                                                         }
                                                         uefi_parser::IfrEdk2ExtendOpCode::SubClass => {
                                                             if edk2.Data.len() == 2 {
-                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, SubClass: {}", 
+                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, SubClass: 0x{:X}", 
                                                                         guid.Guid,
                                                                         edk2.ExtendedOpCode,
                                                                         edk2.Data[1] as u16 * 100 + edk2.Data[0] as u16).unwrap();
@@ -1923,7 +1923,7 @@ fn uefi_ifr_extract(
                                                 {
                                                     match edk.ExtendedOpCode {
                                                         uefi_parser::IfrEdkExtendOpCode::OptionKey => {
-                                                            write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, QuestionId: {}, Data: {:?}", 
+                                                            write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, QuestionId: 0x{:X}, Data: {:?}", 
                                                                         guid.Guid,
                                                                         edk.ExtendedOpCode,
                                                                         edk.QuestionId,
@@ -1935,7 +1935,7 @@ fn uefi_ifr_extract(
                                                                 let name_id = edk.Data[1] as u16
                                                                     * 100
                                                                     + edk.Data[0] as u16;
-                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, QuestionId: {}, Name: \"{}\"", 
+                                                                write!(&mut text, "Guid: {}, ExtendedOpCode: {:?}, QuestionId: 0x{:X}, Name: \"{}\"", 
                                                                         guid.Guid,
                                                                         edk.ExtendedOpCode,
                                                                         edk.QuestionId,
@@ -1999,7 +1999,7 @@ fn uefi_ifr_extract(
                                     Ok((_, warn)) => {
                                         write!(
                                             &mut text,
-                                            "Timeout: {}, Warning: \"{}\"",
+                                            "Timeout: 0x{:X}, Warning: \"{}\"",
                                             warn.Timeout,
                                             strings_map
                                                 .get(&warn.WarningStringId)
@@ -2425,7 +2425,7 @@ fn framework_ifr_extract(
                                     Ok((_, form)) => {
                                         write!(
                                             &mut text,
-                                            "Title: {}, FormId: 0x{:X}",
+                                            "Title: \"{}\", FormId: 0x{:X}",
                                             strings_map
                                                 .get(&form.TitleStringId)
                                                 .unwrap_or(&String::from("InvalidId")),
@@ -2448,7 +2448,7 @@ fn framework_ifr_extract(
                                     Ok((_, subtitle)) => {
                                         write!(
                                             &mut text,
-                                            "Subtitle: {}",
+                                            "Subtitle: \"{}\"",
                                             strings_map
                                                 .get(&subtitle.SubtitleStringId)
                                                 .unwrap_or(&String::from("InvalidId"))
@@ -2467,7 +2467,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_text(operation.Data.unwrap()) {
                                     Ok((_, txt)) => {
                                         write!(&mut text,
-                                            "Text: {}, TextTwo: {}, Help: {}, Flags: 0x{:X}, Key: 0x{:X}",
+                                            "Text: \"{}\", TextTwo: \"{}\", Help: \"{}\", Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map.get(&txt.TextStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&txt.TextTwoStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&txt.HelpStringId).unwrap_or(&String::from("InvalidId")),
@@ -2490,7 +2490,7 @@ fn framework_ifr_extract(
                                     Ok((_, oneof)) => {
                                         write!(
                                             &mut text,
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}",
+                                            "Prompt: \"{}\", Help: \"{}\", QuestionId: 0x{:X}, Width: 0x{:X}",
                                             strings_map
                                                 .get(&oneof.PromptStringId)
                                                 .unwrap_or(&String::from("InvalidId")),
@@ -2514,7 +2514,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_check_box(operation.Data.unwrap()) {
                                     Ok((_, checkbox)) => {
                                         write!(&mut text,
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}",
+                                            "Prompt: \"{}\", Help: \"{}\", QuestionId: 0x{:X}, Width: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map.get(&checkbox.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&checkbox.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             checkbox.QuestionId,
@@ -2535,7 +2535,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_numeric(operation.Data.unwrap()) {
                                     Ok((_, numeric)) => {
                                         write!(&mut text,
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, Min: {}, Max: {}, Step: {}, Default: {}",
+                                            "Prompt: \"{}\", Help: \"{}\", QuestionId: 0x{:X}, Width: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}, Default: 0x{:X}",
                                             strings_map.get(&numeric.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&numeric.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             numeric.QuestionId,
@@ -2560,7 +2560,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_password(operation.Data.unwrap()) {
                                     Ok((_, password)) => {
                                         write!(&mut text,
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, MinSize: {}, MaxSize: {}, Encoding 0x{:X}",
+                                            "Prompt: \"{}\", Help: \"{}\", QuestionId: 0x{:X}, Width: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}, MinSize: 0x{:X}, MaxSize: 0x{:X}, Encoding 0x{:X}",
                                             strings_map.get(&password.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&password.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             password.QuestionId,
@@ -2585,7 +2585,7 @@ fn framework_ifr_extract(
                                     Ok((_, oneofopt)) => {
                                         write!(
                                             &mut text,
-                                            "Option: {}, Value: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
+                                            "Option: \"{}\", Value: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map
                                                 .get(&oneofopt.OptionStringId)
                                                 .unwrap_or(&String::from("InvalidId")),
@@ -2643,7 +2643,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_form_set(operation.Data.unwrap()) {
                                     Ok((_, formset)) => {
                                         write!(&mut text,
-                                            "Title: {}, Help: {}, Guid: {}, CallbackHandle: 0x{:X}, Class: 0x{:X}, SubClass: 0x{:X}, NvDataSize: 0x{:X}",
+                                            "Title: \"{}\", Help: \"{}\", Guid: {}, CallbackHandle: 0x{:X}, Class: 0x{:X}, SubClass: 0x{:X}, NvDataSize: 0x{:X}",
                                             strings_map.get(&formset.TitleStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&formset.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             formset.Guid,
@@ -2667,7 +2667,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_ref(operation.Data.unwrap()) {
                                     Ok((_, rf)) => {
                                         write!(&mut text,
-                                            "Prompt: {}, Help: {}, FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
+                                            "Prompt: \"{}\", Help: \"{}\", FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map.get(&rf.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&rf.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             rf.FormId,
@@ -2691,7 +2691,7 @@ fn framework_ifr_extract(
                                     Ok((_, incif)) => {
                                         write!(
                                             &mut text,
-                                            "Popup: {}, Flags: 0x{:X}",
+                                            "Popup: \"{}\", Flags: 0x{:X}",
                                             strings_map
                                                 .get(&incif.PopupStringId)
                                                 .unwrap_or(&String::from("InvalidId")),
@@ -2748,7 +2748,7 @@ fn framework_ifr_extract(
                                     Ok((_, eqidlist)) => {
                                         write!(
                                             &mut text,
-                                            "QuestionId: 0x{:X}, Width: {}, List: {{",
+                                            "QuestionId: 0x{:X}, Width: 0x{:X}, List: {{",
                                             eqidlist.QuestionId, eqidlist.Width
                                         )
                                         .unwrap();
@@ -2790,7 +2790,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_date(operation.Data.unwrap()) {
                                     Ok((_, date)) => {
                                         write!(&mut text,
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, Min: {}, Max: {}, Step: {}, Default: {}",
+                                            "Prompt: \"{}\", Help: \"{}\", QuestionId: 0x{:X}, Width: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}, Default: 0x{:X}",
                                             strings_map.get(&date.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&date.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             date.QuestionId,
@@ -2815,7 +2815,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_time(operation.Data.unwrap()) {
                                     Ok((_, time)) => {
                                         write!(&mut text,
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, Min: {}, Max: {}, Step: {}, Default: {}",
+                                            "Prompt: \"{}\", Help: \"{}\", QuestionId: 0x{:X}, Width: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}, Default: 0x{:X}",
                                             strings_map.get(&time.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&time.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             time.QuestionId,
@@ -2840,7 +2840,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_string(operation.Data.unwrap()) {
                                     Ok((_, str)) => {
                                         write!(&mut text,
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, Width: {}, Flags: 0x{:X}, Key: 0x{:X}, MinSize: {}, MaxSize: {}",
+                                            "Prompt: \"{}\", Help: \"{}\", QuestionId: 0x{:X}, Width: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}, MinSize: 0x{:X}, MaxSize: 0x{:X}",
                                             strings_map.get(&str.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&str.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             str.QuestionId,
@@ -2877,7 +2877,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_save_defaults(operation.Data.unwrap()) {
                                     Ok((_, sd)) => {
                                         write!(&mut text,
-                                            "Prompt: {}, Help: {}, FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
+                                            "Prompt: \"{}\", Help: \"{}\", FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map.get(&sd.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&sd.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             sd.FormId,
@@ -2899,7 +2899,7 @@ fn framework_ifr_extract(
                                 ) {
                                     Ok((_, rd)) => {
                                         write!(&mut text,
-                                            "Prompt: {}, Help: {}, FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
+                                            "Prompt: \"{}\", Help: \"{}\", FormId: 0x{:X}, Flags: 0x{:X}, Key: 0x{:X}",
                                             strings_map.get(&rd.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&rd.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             rd.FormId,
@@ -2920,7 +2920,7 @@ fn framework_ifr_extract(
                                     Ok((_, banner)) => {
                                         write!(
                                             &mut text,
-                                            "Title: {}, LineNumber: {}, Alignment: 0x{:X}",
+                                            "Title: \"{}\", LineNumber: 0x{:X}, Alignment: 0x{:X}",
                                             strings_map
                                                 .get(&banner.TitleStringId)
                                                 .unwrap_or(&String::from("InvalidId")),
@@ -2942,7 +2942,7 @@ fn framework_ifr_extract(
                                     Ok((_, inventory)) => {
                                         write!(
                                             &mut text,
-                                            "Text: {}, TextTwo: {}, Help: {}",
+                                            "Text: \"{}\", TextTwo: \"{}\", Help: \"{}\"",
                                             strings_map
                                                 .get(&inventory.TextStringId)
                                                 .unwrap_or(&String::from("InvalidId")),
@@ -2985,7 +2985,7 @@ fn framework_ifr_extract(
                                 match framework_parser::ifr_ordered_list(operation.Data.unwrap()) {
                                     Ok((_, ol)) => {
                                         write!(&mut text,
-                                            "Prompt: {}, Help: {}, QuestionId: 0x{:X}, MaxEntries: {}",
+                                            "Prompt: \"{}\", Help: \"{}\", QuestionId: 0x{:X}, MaxEntries: 0x{:X}",
                                             strings_map.get(&ol.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                             strings_map.get(&ol.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                             ol.QuestionId,
@@ -3005,7 +3005,7 @@ fn framework_ifr_extract(
                                     Ok((_, vs)) => {
                                         write!(
                                             &mut text,
-                                            "VarstoreId: 0x{:X}, Guid: {} , Name: {}, Size: 0x{:X}",
+                                            "VarstoreId: 0x{:X}, Guid: {}, Name: \"{}\", Size: 0x{:X}",
                                             vs.VarStoreId, vs.Guid, vs.Name, vs.Size
                                         )
                                         .unwrap();
@@ -3281,7 +3281,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
             println!("UEFI HII form packages:");
             let mut num = 0;
             for form in &uefi_forms {
-                println!("Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Used strings: {}, Min StringId: {}, Max StringId: {}",
+                println!("Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Used strings: {}, Min StringId: 0x{:X}, Max StringId: 0x{:X}",
                         num, form.offset, form.length, form.used_strings, form.min_string_id, form.max_string_id);
                 num += 1;
             }
@@ -3302,7 +3302,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
             println!("Framework HII form packages:");
             let mut num = 0;
             for form in &framework_forms {
-                println!("Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Used strings: {}, Min StringId: {}, Max StringId: {}",
+                println!("Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Used strings: {}, Min StringId: 0x{:X}, Max StringId: 0x{:X}",
                         num, form.offset, form.length, form.used_strings, form.min_string_id, form.max_string_id);
                 num += 1;
             }
