@@ -724,7 +724,7 @@ fn uefi_ifr_extract(
             match uefi_parser::ifr_operations(package.Data.unwrap()) {
                 Ok((_, operations)) => {
                     let mut scope_depth = 0;
-                    let mut current_operation_offset = form_package.offset;
+                    let mut current_operation_offset = form_package.offset + 4; // Header size of UEFI HII form package is 4 bytes
                     for operation in &operations {
                         if operation.OpCode == uefi_parser::IfrOpcode::End {
                             if scope_depth >= 1 {
@@ -2391,7 +2391,7 @@ fn framework_ifr_extract(
             match framework_parser::ifr_operations(package.Data.unwrap()) {
                 Ok((_, operations)) => {
                     let mut scope_depth = 0;
-                    let mut current_operation_offset = form_package.offset;
+                    let mut current_operation_offset = form_package.offset + 6; // Header size of Framework HII form package is 6 bytes
                     for operation in &operations {
                         // Special case of operations that decrease scope_depth
                         if operation.OpCode == framework_parser::IfrOpcode::EndFormSet
