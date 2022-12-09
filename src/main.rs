@@ -841,7 +841,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::OneOf => {
                                 match uefi_parser::ifr_one_of(operation.Data.unwrap()) {
                                     Ok((_, onf)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}, ", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarOffset: 0x{:X}, Flags: 0x{:X}, ", 
                                                 strings_map.get(&onf.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&onf.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 onf.QuestionFlags,
@@ -901,7 +901,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::CheckBox => {
                                 match uefi_parser::ifr_check_box(operation.Data.unwrap()) {
                                     Ok((_, cb)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarOffset: 0x{:X}, Flags: 0x{:X}", 
                                                 strings_map.get(&cb.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&cb.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 cb.QuestionFlags,
@@ -921,7 +921,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Numeric => {
                                 match uefi_parser::ifr_numeric(operation.Data.unwrap()) {
                                     Ok((_, num)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreOffset: 0x{:X}, Flags: 0x{:X}, ", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarOffset: 0x{:X}, Flags: 0x{:X}, ", 
                                                 strings_map.get(&num.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&num.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 num.QuestionFlags,
@@ -1376,7 +1376,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::OrderedList => {
                                 match uefi_parser::ifr_ordered_list(operation.Data.unwrap()) {
                                     Ok((_, ol)) => {
-                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarStoreOffset: 0x{:X}, MaxContainers: 0x{:X}, Flags: 0x{:X}", 
+                                        write!(&mut text, "Prompt: \"{}\", Help: \"{}\", QuestionFlags: 0x{:X}, QuestionId: 0x{:X}, VarStoreId: 0x{:X}, VarOffset: 0x{:X}, MaxContainers: 0x{:X}, Flags: 0x{:X}", 
                                                 strings_map.get(&ol.PromptStringId).unwrap_or(&String::from("InvalidId")),
                                                 strings_map.get(&ol.HelpStringId).unwrap_or(&String::from("InvalidId")),
                                                 ol.QuestionFlags,
