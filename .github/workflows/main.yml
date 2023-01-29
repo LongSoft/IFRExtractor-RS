@@ -13,24 +13,30 @@ env:
 jobs:
   build_mac:
     name: Build on macOS
-    runs-on: macos-latest
+    runs-on: macos-12
 
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: cargo build --verbose --release
+      run: | 
+        rustup target add aarch64-apple-darwin
+        cargo build --verbose --release
+        cargo build --verbose --release --target aarch64-apple-darwin
+        lipo -create \
+            ./target/aarch64-apple-darwin/release/ifrextractor \
+            ./target/release/ifrextractor \
+            -output ./ifrextractor
     - name: Upload to artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-        name: macOS build
-        path: target/release/ifrextractor
+        name: macOS build (universal)
+        path: ifrextractor
 
   build_freebsd:
     name: Build on FreeBSD
     runs-on: macos-12
     steps:
       - uses: actions/checkout@v3
-    
       - name: Build on FreeBSD inside macOS VM
         id: test
         uses: vmactions/freebsd-vm@v0
@@ -40,9 +46,8 @@ jobs:
             pkg install -y rust
           run: |
             cargo build --verbose --release
-            
       - name: Upload to artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: FreeBSD build
           path: target/release/ifrextractor
@@ -56,7 +61,7 @@ jobs:
     - name: Build
       run: cargo build --verbose --release
     - name: Upload to artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Linux build
         path: target/release/ifrextractor
@@ -69,7 +74,7 @@ jobs:
     - name: Build
       run: cargo build --verbose --release
     - name: Upload to artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Windows build
         path: target/release/ifrextractor.exe
