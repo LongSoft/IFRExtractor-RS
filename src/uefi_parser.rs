@@ -925,7 +925,7 @@ pub struct IfrCheckBox {
 }
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
-pub enum IfrDefaultFlags {
+pub enum IfrCheckBoxDefaultFlags {
     Default = 0x01,
     MfgDefault = 0x02,
 }
@@ -1050,6 +1050,12 @@ pub fn ifr_password(input: &[u8]) -> IResult<&[u8], IfrPassword> {
 //
 //0x09 => IfrOpcode::OneOfOption
 //
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+pub enum IfrOneOfOptionDefaultFlags {
+    Default = 0x10,
+    MfgDefault = 0x20,
+}
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct HiiTime {
     pub Hour: u8,

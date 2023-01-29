@@ -910,11 +910,17 @@ fn uefi_ifr_extract(
                                                 cb.VarStoreInfo,
                                                 cb.Flags).unwrap();
 
-                                        if cb.Flags & (uefi_parser::IfrDefaultFlags::Default as u8) > 0  {
-                                            write!(&mut text, ", Default").unwrap();
+                                        if cb.Flags & (uefi_parser::IfrCheckBoxDefaultFlags::Default as u8) > 0 {
+                                            write!(&mut text, ", Default: Enabled").unwrap();
                                         }
-                                        if cb.Flags & (uefi_parser::IfrDefaultFlags::MfgDefault as u8) > 0 {
-                                            write!(&mut text, ", MfgDefault").unwrap();
+                                        else {
+                                            write!(&mut text, ", Default: Disabled").unwrap();
+                                        }
+                                        if cb.Flags & (uefi_parser::IfrCheckBoxDefaultFlags::MfgDefault as u8) > 0 {
+                                            write!(&mut text, ", MfgDefault: Enabled").unwrap();
+                                        }
+                                        else {
+                                            write!(&mut text, ", MfgDefault: Disabled").unwrap();
                                         }
                                     }
                                     Err(e) => {
@@ -1043,10 +1049,10 @@ fn uefi_ifr_extract(
                                             }
                                         }
 
-                                        if opt.Flags & (uefi_parser::IfrDefaultFlags::Default as u8) > 0  {
+                                        if opt.Flags & (uefi_parser::IfrOneOfOptionDefaultFlags::Default as u8) > 0  {
                                             write!(&mut text, ", Default").unwrap();
                                         }
-                                        if opt.Flags & (uefi_parser::IfrDefaultFlags::MfgDefault as u8) > 0 {
+                                        if opt.Flags & (uefi_parser::IfrOneOfOptionDefaultFlags::MfgDefault as u8) > 0 {
                                             write!(&mut text, ", MfgDefault").unwrap();
                                         }
                                     }
@@ -3275,45 +3281,37 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
     } else if collected_args.len() == 3 && collected_args[2] == "list" {
         if uefi_ifr_found {
             println!("UEFI HII form packages:");
-            let mut num = 0;
-            for form in &uefi_forms {
+            for (form_num, form) in uefi_forms.iter().enumerate() {
                 println!("Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Used strings: {}, Min StringId: 0x{:X}, Max StringId: 0x{:X}",
-                        num, form.offset, form.length, form.used_strings, form.min_string_id, form.max_string_id);
-                num += 1;
+                        form_num, form.offset, form.length, form.used_strings, form.min_string_id, form.max_string_id);
             }
             println!("UEFI HII string packages:");
-            num = 0;
-            for string in &uefi_strings {
+            for (string_num, string) in uefi_strings.iter().enumerate() {
                 println!(
                     "Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Language: {}, Total strings: {}",
-                    num,
+                    string_num,
                     string.offset,
                     string.length,
                     string.language,
                     string.string_id_map.len()
                 );
-                num += 1;
             }
         } else if framework_ifr_found {
             println!("Framework HII form packages:");
-            let mut num = 0;
-            for form in &framework_forms {
+            for (form_num, form) in framework_forms.iter().enumerate() {
                 println!("Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Used strings: {}, Min StringId: 0x{:X}, Max StringId: 0x{:X}",
-                        num, form.offset, form.length, form.used_strings, form.min_string_id, form.max_string_id);
-                num += 1;
+                        form_num, form.offset, form.length, form.used_strings, form.min_string_id, form.max_string_id);
             }
             println!("Framework HII string packages:");
-            num = 0;
-            for string in &framework_strings {
+            for (string_num, string) in framework_strings.iter().enumerate() {
                 println!(
                     "Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Language: {}, Total strings: {}",
-                    num,
+                    string_num,
                     string.offset,
                     string.length,
                     string.language,
                     string.string_id_map.len()
                 );
-                num += 1;
             }
         }
     } else if collected_args.len() == 3 && collected_args[2] == "all" {
