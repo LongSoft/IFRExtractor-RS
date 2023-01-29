@@ -329,9 +329,9 @@ impl From<u8> for IfrOpcode {
     }
 }
 
-impl Into<u8> for IfrOpcode {
-    fn into(self) -> u8 {
-        match self {
+impl From<IfrOpcode> for u8 {
+    fn from(val: IfrOpcode) -> Self {
+        match val {
             IfrOpcode::Form => 0x01,
             IfrOpcode::Subtitle => 0x02,
             IfrOpcode::Text => 0x03,
@@ -398,8 +398,7 @@ impl fmt::Display for IfrOperation<'_> {
             for byte in bytes {
                 write!(
                     f,
-                    " {:02X}",
-                    byte
+                    " {byte:02X}"
                 )
                 .unwrap();
             }

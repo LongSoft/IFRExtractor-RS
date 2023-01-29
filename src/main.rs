@@ -52,7 +52,7 @@ fn uefi_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<F
                     // Parse SIBT blocks
                     if let Ok((_, sibt_blocks)) = uefi_parser::hii_sibt_blocks(string_package.Data)
                     {
-                        string_id_map.insert(0 as u16, String::new());
+                        string_id_map.insert(0_u16, String::new());
                         let mut current_string_index = 1;
                         for block in &sibt_blocks {
                             match block.Type {
@@ -186,7 +186,7 @@ fn uefi_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<F
     }
 
     // No need to continue if there are no string packages found
-    if strings.len() == 0 {
+    if strings.is_empty() {
         return (Vec::new(), Vec::new());
     }
 
@@ -511,7 +511,7 @@ fn uefi_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<F
                             uefi_parser::IfrOpcode::Conditional => {}
                             // 0x51: QuestionRef3
                             uefi_parser::IfrOpcode::QuestionRef3 => {
-                                if let Some(_) = operation.Data {
+                                if operation.Data.is_some() {
                                     if let Ok((_, qr)) =
                                         uefi_parser::ifr_question_ref_3(operation.Data.unwrap())
                                     {
@@ -654,7 +654,7 @@ fn uefi_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<F
                 // Find min and max StringId, and the number of unique ones
                 string_ids.sort();
                 string_ids.dedup();
-                if string_ids.len() > 0 {
+                if !string_ids.is_empty() {
                     // Add the required information to forms
                     let form = (
                         i,
@@ -676,7 +676,7 @@ fn uefi_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<F
     }
 
     // No need to continue if no forms are found
-    if forms.len() == 0 {
+    if forms.is_empty() {
         return (Vec::new(), Vec::new());
     }
 
@@ -701,7 +701,7 @@ fn uefi_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<F
         });
     }
 
-    return (result_strings, result_forms);
+    (result_strings, result_forms)
 }
 
 fn uefi_ifr_extract(
@@ -712,12 +712,12 @@ fn uefi_ifr_extract(
     string_package: &StringPackage,
     string_package_index: usize,
     verbose_mode: bool,
-) -> () {
+) {
     let mut text = Vec::new();
     let strings_map = &string_package.string_id_map;
 
     // Add version number and extraction mode
-    write!(&mut text, "Program version: {}, Extraction mode: UEFI\n", VERSION.unwrap_or("0.0.0")).unwrap();
+    writeln!(&mut text, "Program version: {}, Extraction mode: UEFI", VERSION.unwrap_or("0.0.0")).unwrap();
 
     if let Ok((_, candidate)) =
         uefi_parser::hii_form_package_candidate(&data[form_package.offset..])
@@ -726,20 +726,17 @@ fn uefi_ifr_extract(
             // Parse form package and output its structure as human-readable strings
             match uefi_parser::ifr_operations(package.Data.unwrap()) {
                 Ok((_, operations)) => {
-                    let mut scope_depth = 0;
+                    let mut scope_depth: usize = 0;
                     let mut current_operation_offset = form_package.offset + 4; // Header size of UEFI HII form package is 4 bytes
                     for operation in &operations {
-                        if operation.OpCode == uefi_parser::IfrOpcode::End {
-                            if scope_depth >= 1 {
-                                scope_depth -= 1;
-                            }
+                        if operation.OpCode == uefi_parser::IfrOpcode::End && scope_depth >= 1 {
+                            scope_depth -= 1;
                         }
                         
                         if verbose_mode {
                             write!(
                                 &mut text,
-                                "0x{:X}: ",
-                                current_operation_offset
+                                "0x{current_operation_offset:X}: "
                             )
                             .unwrap();
                         }
@@ -751,7 +748,7 @@ fn uefi_ifr_extract(
                         )
                         .unwrap();
 
-                        if operation.ScopeStart == true {
+                        if operation.ScopeStart {
                             scope_depth += 1;
                         }
 
@@ -773,7 +770,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Form parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Form parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -797,7 +794,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Subtitle parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Subtitle parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -823,7 +820,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Text parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Text parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -836,7 +833,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Image parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Image parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -852,7 +849,7 @@ fn uefi_ifr_extract(
                                                 onf.VarStoreId,
                                                 onf.VarStoreInfo,
                                                 onf.Flags).unwrap();
-                                        if let Some(_) = onf.MinMaxStepData8[0] {
+                                        if onf.MinMaxStepData8[0].is_some() {
                                             write!(
                                                 &mut text,
                                                 "Size: 8, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
@@ -862,7 +859,7 @@ fn uefi_ifr_extract(
                                             )
                                             .unwrap();
                                         }
-                                        if let Some(_) = onf.MinMaxStepData16[0] {
+                                        if onf.MinMaxStepData16[0].is_some() {
                                             write!(
                                                 &mut text,
                                                 "Size: 16, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
@@ -872,7 +869,7 @@ fn uefi_ifr_extract(
                                             )
                                             .unwrap();
                                         }
-                                        if let Some(_) = onf.MinMaxStepData32[0] {
+                                        if onf.MinMaxStepData32[0].is_some() {
                                             write!(
                                                 &mut text,
                                                 "Size: 32, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
@@ -882,7 +879,7 @@ fn uefi_ifr_extract(
                                             )
                                             .unwrap();
                                         }
-                                        if let Some(_) = onf.MinMaxStepData64[0] {
+                                        if onf.MinMaxStepData64[0].is_some() {
                                             write!(
                                                 &mut text,
                                                 "Size: 64, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
@@ -896,7 +893,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("OneOf parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("OneOf parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -923,7 +920,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("CheckBox parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("CheckBox parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -939,7 +936,7 @@ fn uefi_ifr_extract(
                                                 num.VarStoreId,
                                                 num.VarStoreInfo,
                                                 num.Flags).unwrap();
-                                        if let Some(_) = num.MinMaxStepData8[0] {
+                                        if num.MinMaxStepData8[0].is_some() {
                                             write!(
                                                 &mut text,
                                                 "Size: 8, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
@@ -949,7 +946,7 @@ fn uefi_ifr_extract(
                                             )
                                             .unwrap();
                                         }
-                                        if let Some(_) = num.MinMaxStepData16[0] {
+                                        if num.MinMaxStepData16[0].is_some() {
                                             write!(
                                                 &mut text,
                                                 "Size: 16, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
@@ -959,7 +956,7 @@ fn uefi_ifr_extract(
                                             )
                                             .unwrap();
                                         }
-                                        if let Some(_) = num.MinMaxStepData32[0] {
+                                        if num.MinMaxStepData32[0].is_some() {
                                             write!(
                                                 &mut text,
                                                 "Size: 32, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
@@ -969,7 +966,7 @@ fn uefi_ifr_extract(
                                             )
                                             .unwrap();
                                         }
-                                        if let Some(_) = num.MinMaxStepData64[0] {
+                                        if num.MinMaxStepData64[0].is_some() {
                                             write!(
                                                 &mut text,
                                                 "Size: 64, Min: 0x{:X}, Max: 0x{:X}, Step: 0x{:X}",
@@ -983,7 +980,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Numeric parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Numeric parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1004,7 +1001,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Password parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Password parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1056,7 +1053,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("OneOfOption parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("OneOfOption parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1091,7 +1088,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Action parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Action parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1115,7 +1112,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("ResetButton parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("ResetButton parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1139,7 +1136,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("FormSet parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("FormSet parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1155,22 +1152,22 @@ fn uefi_ifr_extract(
                                                 rf.VarStoreId,
                                                 rf.VarStoreInfo).unwrap();
                                         if let Some(x) = rf.FormId {
-                                            write!(&mut text, ", FormId: 0x{:X}", x).unwrap();
+                                            write!(&mut text, ", FormId: 0x{x:X}").unwrap();
                                         }
                                         if let Some(x) = rf.RefQuestionId {
-                                            write!(&mut text, ", RefQuestionId: 0x{:X}", x).unwrap();
+                                            write!(&mut text, ", RefQuestionId: 0x{x:X}").unwrap();
                                         }
                                         if let Some(x) = rf.FormSetGuid {
-                                            write!(&mut text, ", FormSetGuid: {}", x).unwrap();
+                                            write!(&mut text, ", FormSetGuid: {x}").unwrap();
                                         }
                                         if let Some(x) = rf.DevicePathId {
-                                            write!(&mut text, ", DevicePathId: 0x{:X}", x).unwrap();
+                                            write!(&mut text, ", DevicePathId: 0x{x:X}").unwrap();
                                         }
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Ref parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Ref parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1190,7 +1187,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("NoSubmitIf parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("NoSubmitIf parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1210,7 +1207,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("InconsistentIf parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("InconsistentIf parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1228,7 +1225,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!(" EqIdVal parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!(" EqIdVal parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1246,7 +1243,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("EqIdId parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("EqIdId parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1264,7 +1261,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("EqIdValList parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("EqIdValList parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1283,7 +1280,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Rule parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Rule parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1305,7 +1302,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Date parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Date parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1325,7 +1322,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Time parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Time parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1347,7 +1344,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("String parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("String parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1365,7 +1362,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Refresh parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Refresh parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1381,7 +1378,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Animation parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Animation parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1408,7 +1405,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("OrderedList parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("OrderedList parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1429,7 +1426,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("VarStore parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("VarStore parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1448,7 +1445,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("VarStoreNameValue parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("VarStoreNameValue parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1463,21 +1460,19 @@ fn uefi_ifr_extract(
                                         ).unwrap();
 
                                         if let Some(size) = var_store.Size {
-                                            write!(&mut text, ", Size: 0x{:X}", 
-                                                size
+                                            write!(&mut text, ", Size: 0x{size:X}"
                                             ).unwrap();
                                         }
 
                                         if let Some(name) = var_store.Name {
-                                            write!(&mut text, ", Name: \"{}\"", 
-                                                name
+                                            write!(&mut text, ", Name: \"{name}\""
                                             ).unwrap();
                                         }
                                     }
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("VarStoreEfi parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("VarStoreEfi parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1497,7 +1492,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("VarStoreDevice parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("VarStoreDevice parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1521,7 +1516,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Get parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Get parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1539,7 +1534,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Set parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Set parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1588,7 +1583,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("RuleRef parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("RuleRef parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1601,7 +1596,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("QuestionRef1 parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("QuestionRef1 parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1616,7 +1611,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Uint8 parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Uint8 parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1629,7 +1624,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Uint16 parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Uint16 parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1642,7 +1637,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Uint32 parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Uint32 parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1655,7 +1650,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Uint64 parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Uint64 parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1674,7 +1669,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("ToString parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("ToString parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1691,7 +1686,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Find parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Find parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1713,7 +1708,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("StringRef1 parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("StringRef1 parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1723,7 +1718,7 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Conditional => {}
                             // 0x51: QuestionRef3
                             uefi_parser::IfrOpcode::QuestionRef3 => {
-                                if let Some(_) = operation.Data {
+                                if operation.Data.is_some() {
                                     match uefi_parser::ifr_question_ref_3(operation.Data.unwrap()) {
                                         Ok((_, qr)) => {
                                             if let Some(x) = qr.DevicePathId {
@@ -1737,7 +1732,7 @@ fn uefi_ifr_extract(
                                                 .unwrap();
                                             }
                                             if let Some(x) = qr.QuestionGuid {
-                                                write!(&mut text, "Guid: {}", x).unwrap();
+                                                write!(&mut text, "Guid: {x}").unwrap();
                                             }
                                         }
                                         Err(e) => {
@@ -1747,7 +1742,7 @@ fn uefi_ifr_extract(
                                                 operation.Data.unwrap()
                                             )
                                             .unwrap();
-                                            println!("QuestionRef3 parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                            println!("QuestionRef3 parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                         }
                                     }
                                 }
@@ -1775,7 +1770,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Span parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Span parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1815,7 +1810,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Default parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Default parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1836,7 +1831,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("DefaultStore parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("DefaultStore parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1860,7 +1855,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("FormMap parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("FormMap parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1980,7 +1975,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Guid parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Guid parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -1993,7 +1988,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Security parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Security parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2008,7 +2003,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("RefreshId parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("RefreshId parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2029,7 +2024,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("WarningIf parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("WarningIf parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2042,7 +2037,7 @@ fn uefi_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Match2 parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Match2 parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2050,20 +2045,20 @@ fn uefi_ifr_extract(
                             uefi_parser::IfrOpcode::Unknown(x) => {
                                 write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                     .unwrap();
-                                println!("IFR operation of unknown type 0x{:X}", x);
+                                println!("IFR operation of unknown type 0x{x:X}");
                             }
                         }
                         current_operation_offset += operation.Length as usize;
 
                         if verbose_mode {
-                            write!(&mut text, " {}", operation).unwrap();
+                            write!(&mut text, " {operation}").unwrap();
                         }
 
-                        writeln!(&mut text, "").unwrap();
+                        writeln!(&mut text).unwrap();
                     }
                 }
                 Err(e) => {
-                    println!("IFR operations parse error: {:?}", e);
+                    println!("IFR operations parse error: {e:?}");
                 }
             }
         }
@@ -2084,10 +2079,10 @@ fn uefi_ifr_extract(
         .truncate(true)
         .create(true)
         .open(&file_path)
-        .expect(&format!("Can't create output file {:?}", &file_path));
+        .unwrap_or_else(|_| panic!("Can't create output file {:?}", &file_path));
     output_file
-        .write(&text)
-        .expect(&format!("Can't write to output file {:?}", file_path));
+        .write_all(&text)
+        .unwrap_or_else(|_| panic!("{}", "Can't write to output file {file_path:?}"));
 }
 
 //
@@ -2105,9 +2100,8 @@ fn framework_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, 
                     framework_parser::hii_string_package(package.Data.unwrap())
                 {
                     let mut string_id_map = HashMap::new(); // Map of StringIds to strings
-                    let mut current_string_index = 0;
                     let mut language = String::from("Invalid");
-                    for string in &string_package.Strings {
+                    for (current_string_index, string) in string_package.Strings.iter().enumerate() {
                         // This will always work in a properly formatted string package
                         if string_package.StringPointers[current_string_index]
                             == string_package.LanguageNameStringOffset
@@ -2116,7 +2110,6 @@ fn framework_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, 
                         }
 
                         string_id_map.insert(current_string_index as u16, string.clone());
-                        current_string_index += 1;
                     }
 
                     // Add string
@@ -2136,7 +2129,7 @@ fn framework_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, 
     }
 
     // No need to continue if there are no string packages found
-    if strings.len() == 0 {
+    if strings.is_empty() {
         return (Vec::new(), Vec::new());
     }
 
@@ -2340,7 +2333,7 @@ fn framework_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, 
                 // Find min and max StringId, and the number of unique ones
                 string_ids.sort();
                 string_ids.dedup();
-                if string_ids.len() > 0 {
+                if !string_ids.is_empty() {
                     // Add the required information to forms
                     let form = (
                         i,
@@ -2362,7 +2355,7 @@ fn framework_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, 
     }
 
     // No need to continue if no forms are found
-    if forms.len() == 0 {
+    if forms.is_empty() {
         return (Vec::new(), Vec::new());
     }
 
@@ -2387,7 +2380,7 @@ fn framework_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, 
         });
     }
 
-    return (result_strings, result_forms);
+    (result_strings, result_forms)
 }
 
 fn framework_ifr_extract(
@@ -2398,12 +2391,12 @@ fn framework_ifr_extract(
     string_package: &StringPackage,
     string_package_index: usize,
     verbose_mode: bool,
-) -> () {
+) {
     let mut text = Vec::new();
     let strings_map = &string_package.string_id_map;
 
     // Add version number and extraction mode
-    write!(&mut text, "Program version: {}, Extraction mode: Framework\n", VERSION.unwrap_or("0.0.0")).unwrap();
+    writeln!(&mut text, "Program version: {}, Extraction mode: Framework", VERSION.unwrap_or("0.0.0")).unwrap();
 
     if let Ok((_, candidate)) =
         framework_parser::hii_form_package_candidate(&data[form_package.offset..])
@@ -2412,23 +2405,20 @@ fn framework_ifr_extract(
             // Parse form package and output its structure as human-readable strings
             match framework_parser::ifr_operations(package.Data.unwrap()) {
                 Ok((_, operations)) => {
-                    let mut scope_depth = 0;
+                    let mut scope_depth:usize = 0;
                     let mut current_operation_offset = form_package.offset + 6; // Header size of Framework HII form package is 6 bytes
                     for operation in &operations {
                         // Special case of operations that decrease scope_depth
                         if operation.OpCode == framework_parser::IfrOpcode::EndFormSet
                             || operation.OpCode == framework_parser::IfrOpcode::EndForm
                         {
-                            if scope_depth > 0 {
-                                scope_depth -= 1;
-                            }
+                            scope_depth = scope_depth.saturating_sub(1);
                         }
 
                         if verbose_mode {
                             write!(
                                 &mut text,
-                                "0x{:X}: ",
-                                current_operation_offset
+                                "0x{current_operation_offset:X}: "
                             )
                             .unwrap();
                         }
@@ -2458,7 +2448,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Form parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Form parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
 
@@ -2480,7 +2470,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Subtitle parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Subtitle parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2500,7 +2490,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Text parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Text parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2527,7 +2517,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("OneOf parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("OneOf parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2548,7 +2538,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("CheckBox parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("CheckBox parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2573,7 +2563,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Numeric parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Numeric parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2597,7 +2587,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Password parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Password parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2620,7 +2610,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("OneOfOption parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("OneOfOption parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2634,7 +2624,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("SupressIf parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("SupressIf parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2654,7 +2644,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Hidden parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Hidden parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2678,7 +2668,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("FromSet parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("FromSet parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
 
@@ -2700,7 +2690,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Ref parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Ref parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2724,7 +2714,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("InconsistentIf parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("InconsistentIf parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2742,7 +2732,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("EqIdVal parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("EqIdVal parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2760,7 +2750,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("EqIdId parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("EqIdId parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2782,7 +2772,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("EqIdList parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("EqIdList parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2803,7 +2793,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("GrayoutIf parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("GrayoutIf parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2828,7 +2818,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Date parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Date parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2853,7 +2843,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Time parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Time parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2876,7 +2866,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("String parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("String parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2890,7 +2880,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Label parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Label parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2910,7 +2900,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("SaveDefaults parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("SaveDefaults parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2932,7 +2922,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("RestoreDefaults parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("RestoreDefaults parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2954,7 +2944,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Banner parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Banner parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2980,7 +2970,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("Inventory parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("Inventory parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -2998,7 +2988,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("EqVarVal parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("EqVarVal parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -3017,7 +3007,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("OrderedList parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("OrderedList parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -3035,7 +3025,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("VarStore parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("VarStore parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -3051,7 +3041,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("VarStoreSelect parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("VarStoreSelect parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -3071,7 +3061,7 @@ fn framework_ifr_extract(
                                     Err(e) => {
                                         write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                             .unwrap();
-                                        println!("VarStoreSelectPair parse error: {:?} at offset 0x{:X}", e, current_operation_offset);
+                                        println!("VarStoreSelectPair parse error: {e:?} at offset 0x{current_operation_offset:X}");
                                     }
                                 }
                             }
@@ -3093,20 +3083,20 @@ fn framework_ifr_extract(
                             framework_parser::IfrOpcode::Unknown(x) => {
                                 write!(&mut text, "RawData: {:02X?}", operation.Data.unwrap())
                                     .unwrap();
-                                println!("IFR operation of unknown type 0x{:X}", x);
+                                println!("IFR operation of unknown type 0x{x:X}");
                             }
                         }
                         current_operation_offset += operation.Length as usize;
                         
                         if verbose_mode {
-                            write!(&mut text, " {}", operation).unwrap();
+                            write!(&mut text, " {operation}").unwrap();
                         }
 
-                        writeln!(&mut text, "").unwrap();
+                        writeln!(&mut text).unwrap();
                     }
                 }
                 Err(e) => {
-                    println!("IFR operations parse error: {:?}", e);
+                    println!("IFR operations parse error: {e:?}");
                 }
             }
         }
@@ -3127,10 +3117,10 @@ fn framework_ifr_extract(
         .truncate(true)
         .create(true)
         .open(&file_path)
-        .expect(&format!("Can't create output file {:?}", &file_path));
+        .unwrap_or_else(|_| panic!("Can't create output file {:?}", &file_path));
     output_file
-        .write(&text)
-        .expect(&format!("Can't write to output file {:?}", file_path));
+        .write_all(&text)
+        .unwrap_or_else(|_| panic!("{}", "Can't write to output file {file_path:?}"));
 }
 
 fn main() {
@@ -3156,7 +3146,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
     let path = Path::new(&arg);
 
     // Open input file
-    let mut file = File::open(&path).expect("Can't open input file");
+    let mut file = File::open(path).expect("Can't open input file");
 
     // Read the whole file as binary data
     let mut data = Vec::new();
@@ -3189,10 +3179,8 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
         if uefi_ifr_found {
             println!("Extracting all UEFI HII form packages using en-US UEFI HII string packages");
             let mut found = false;
-            let mut form_num = 0;
-            for form in &uefi_forms {
-                let mut string_num = 0;
-                for string in &uefi_strings {
+            for (form_num, form) in uefi_forms.iter().enumerate() {
+                for (string_num, string) in uefi_strings.iter().enumerate() {
                     if string.language == "en-US" {
                         found = true;
                         uefi_ifr_extract(
@@ -3205,9 +3193,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                             false
                         );
                     }
-                    string_num += 1;
                 }
-                form_num += 1;
             }
             if !found {
                 println!("No en-US UEFI HII string packages found");
@@ -3216,10 +3202,8 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
         } else if framework_ifr_found {
             println!("Extracting all Framework HII form packages using eng Framework HII string packages");
             let mut found = false;
-            let mut form_num = 0;
-            for form in &framework_forms {
-                let mut string_num = 0;
-                for string in &framework_strings {
+            for (form_num, form) in framework_forms.iter().enumerate() {
+                for (string_num, string) in framework_strings.iter().enumerate() {
                     if string.language == "eng" {
                         found = true;
                         framework_ifr_extract(
@@ -3232,9 +3216,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                             false
                         );
                     }
-                    string_num += 1;
                 }
-                form_num += 1;
             }
             if !found {
                 println!("No eng Framework HII string packages found");
@@ -3246,10 +3228,8 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
         if uefi_ifr_found {
             println!("Extracting all UEFI HII form packages using en-US UEFI HII string packages in verbose mode");
             let mut found = false;
-            let mut form_num = 0;
-            for form in &uefi_forms {
-                let mut string_num = 0;
-                for string in &uefi_strings {
+            for (form_num, form) in uefi_forms.iter().enumerate() {
+                for (string_num, string) in uefi_strings.iter().enumerate() {
                     if string.language == "en-US" {
                         found = true;
                         uefi_ifr_extract(
@@ -3262,9 +3242,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                             true
                         );
                     }
-                    string_num += 1;
                 }
-                form_num += 1;
             }
             if !found {
                 println!("No en-US UEFI HII string packages found");
@@ -3273,10 +3251,8 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
         } else if framework_ifr_found {
             println!("Extracting all Framework HII form packages using eng Framework HII string packages in vebose mode");
             let mut found = false;
-            let mut form_num = 0;
-            for form in &framework_forms {
-                let mut string_num = 0;
-                for string in &framework_strings {
+            for (form_num, form) in framework_forms.iter().enumerate() {
+                for (string_num, string) in framework_strings.iter().enumerate() {
                     if string.language == "eng" {
                         found = true;
                         framework_ifr_extract(
@@ -3289,9 +3265,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                             true
                         );
                     }
-                    string_num += 1;
                 }
-                form_num += 1;
             }
             if !found {
                 println!("No eng Framework HII string packages found");
@@ -3345,21 +3319,15 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
     } else if collected_args.len() == 3 && collected_args[2] == "all" {
         if uefi_ifr_found {
             println!("Extracting all UEFI HII form packages using all UEFI HII string packages");
-            let mut form_num = 0;
-            for form in &uefi_forms {
-                let mut string_num = 0;
-                for string in &uefi_strings {
+            for (form_num, form) in uefi_forms.iter().enumerate() {
+                for (string_num, string) in uefi_strings.iter().enumerate() {
                     uefi_ifr_extract(path.as_os_str(), &data, form, form_num, string, string_num, false);
-                    string_num += 1;
                 }
-                form_num += 1;
             }
         } else if framework_ifr_found {
             println!("Extracting all Framework HII form packages using all Framework HII string packages");
-            let mut form_num = 0;
-            for form in &framework_forms {
-                let mut string_num = 0;
-                for string in &framework_strings {
+            for (form_num, form) in framework_forms.iter().enumerate() {
+                for (string_num, string) in framework_strings.iter().enumerate() {
                     framework_ifr_extract(
                         path.as_os_str(),
                         &data,
@@ -3369,9 +3337,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                         string_num,
                         false
                     );
-                    string_num += 1;
                 }
-                form_num += 1;
             }
         }
     } else if collected_args.len() == 4 && collected_args[2] == "lang" {
@@ -3382,10 +3348,8 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                 collected_args[3]
             );
             let mut found = false;
-            let mut form_num = 0;
-            for form in &uefi_forms {
-                let mut string_num = 0;
-                for string in &uefi_strings {
+            for (form_num, form) in uefi_forms.iter().enumerate() {
+                for (string_num, string) in uefi_strings.iter().enumerate() {
                     if string.language == collected_args[3] {
                         found = true;
                         uefi_ifr_extract(
@@ -3398,9 +3362,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                             false
                         );
                     }
-                    string_num += 1;
                 }
-                form_num += 1;
             }
             if !found {
                 println!("No {} UEFI HII string packages found", collected_args[3]);
@@ -3412,10 +3374,8 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                 collected_args[3]
             );
             let mut found = false;
-            let mut form_num = 0;
-            for form in &framework_forms {
-                let mut string_num = 0;
-                for string in &framework_strings {
+            for (form_num, form) in framework_forms.iter().enumerate() {
+                for (string_num, string) in framework_strings.iter().enumerate() {
                     if string.language == collected_args[3] {
                         found = true;
                         framework_ifr_extract(
@@ -3428,9 +3388,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                             false
                         );
                     }
-                    string_num += 1;
                 }
-                form_num += 1;
             }
             if !found {
                 println!(
@@ -3466,8 +3424,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                 std::process::exit(4);
             }
             println!(
-                "Extracting UEFI HII form package #{} using UEFI HII string package #{}",
-                form_package_num, string_package_num
+                "Extracting UEFI HII form package #{form_package_num} using UEFI HII string package #{string_package_num}"
             );
             uefi_ifr_extract(
                 path.as_os_str(),
@@ -3502,8 +3459,7 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                 std::process::exit(4);
             }
             println!(
-                "Extracting Framework HII form package #{} using Framework HII string package #{}",
-                form_package_num, string_package_num
+                "Extracting Framework HII form package #{form_package_num} using Framework HII string package #{string_package_num}"
             );
             framework_ifr_extract(
                 path.as_os_str(),

@@ -635,9 +635,9 @@ impl From<u8> for IfrOpcode {
     }
 }
 
-impl Into<u8> for IfrOpcode {
-    fn into(self) -> u8 {
-        match self {
+impl From<IfrOpcode> for u8 {
+    fn from(val: IfrOpcode) -> Self {
+        match val {
             IfrOpcode::Form => 0x01,
             IfrOpcode::Subtitle => 0x02,
             IfrOpcode::Text => 0x03,
@@ -755,9 +755,7 @@ impl fmt::Display for IfrOperation<'_> {
 
         write!(
             f,
-            "{{ {:02X} {:02X}",
-            opcode,
-            raw_len,
+            "{{ {opcode:02X} {raw_len:02X}",
         )
         .unwrap();
 
@@ -765,8 +763,7 @@ impl fmt::Display for IfrOperation<'_> {
             for byte in bytes {
                 write!(
                     f,
-                    " {:02X}",
-                    byte
+                    " {byte:02X}"
                 )
                 .unwrap();
             }
@@ -1141,35 +1138,35 @@ pub enum IfrTypeValue {
 impl fmt::Display for IfrTypeValue {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            IfrTypeValue::NumSize8(x) => write!(f, "{}", x),
-            IfrTypeValue::NumSize16(x) => write!(f, "{}", x),
-            IfrTypeValue::NumSize32(x) => write!(f, "{}", x),
-            IfrTypeValue::NumSize64(x) => write!(f, "{}", x),
-            IfrTypeValue::Boolean(x) => write!(f, "{}", x),
+            IfrTypeValue::NumSize8(x) => write!(f, "{x}"),
+            IfrTypeValue::NumSize16(x) => write!(f, "{x}"),
+            IfrTypeValue::NumSize32(x) => write!(f, "{x}"),
+            IfrTypeValue::NumSize64(x) => write!(f, "{x}"),
+            IfrTypeValue::Boolean(x) => write!(f, "{x}"),
             IfrTypeValue::Time(x) => write!(f, "{:02}:{:02}:{:02}", x.Hour, x.Minute, x.Second),
             IfrTypeValue::Date(x) => write!(f, "{:04}-{:02}-{:02}", x.Year, x.Month, x.Day),
-            IfrTypeValue::String(x) => write!(f, "StringId: 0x{:X}", x),
+            IfrTypeValue::String(x) => write!(f, "StringId: 0x{x:X}"),
             IfrTypeValue::Other => write!(f, "Other"),
             IfrTypeValue::Undefined => write!(f, "Undefined"),
-            IfrTypeValue::Action(x) => write!(f, "Action: 0x{:X}", x),
-            IfrTypeValue::Buffer(ref x) => write!(f, "Buffer: {:?}", x),
+            IfrTypeValue::Action(x) => write!(f, "Action: 0x{x:X}"),
+            IfrTypeValue::Buffer(ref x) => write!(f, "Buffer: {x:?}"),
             IfrTypeValue::Ref(x) => {
                 write!(f, "Ref").unwrap();
                 if let Some(y) = x.QuestionId {
-                    write!(f, " QuestionId: 0x{:X}", y).unwrap();
+                    write!(f, " QuestionId: 0x{y:X}").unwrap();
                 }
                 if let Some(y) = x.FormId {
-                    write!(f, " FormId: 0x{:X}", y).unwrap();
+                    write!(f, " FormId: 0x{y:X}").unwrap();
                 }
                 if let Some(y) = x.FormSetGuid {
-                    write!(f, " FormSetGuid: {}", y).unwrap();
+                    write!(f, " FormSetGuid: {y}").unwrap();
                 }
                 if let Some(y) = x.DevicePathStringId {
-                    write!(f, " DevicePathId: {}", y).unwrap();
+                    write!(f, " DevicePathId: {y}").unwrap();
                 }
                 write!(f, "")
             }
-            IfrTypeValue::Unknown(x) => write!(f, "Unknown: {:?}", x),
+            IfrTypeValue::Unknown(x) => write!(f, "Unknown: {x:?}"),
         }
     }
 }
@@ -1302,9 +1299,9 @@ pub fn ifr_form_set(input: &[u8]) -> IResult<&[u8], IfrFormSet> {
             >> tsid: le_u16
             >> hsid: le_u16
             >> r: peek!(rest)
-            >> flags: cond_with_error!(r.len() >= 1, le_u8)
-            >> guids_count: cond_with_error!(r.len() >= 1, value!(flags.unwrap() & 0x03))
-            >> guids: cond_with_error!(r.len() >= 1, count!(guid, guids_count.unwrap() as usize))
+            >> flags: cond_with_error!(!r.is_empty(), le_u8)
+            >> guids_count: cond_with_error!(!r.is_empty(), value!(flags.unwrap() & 0x03))
+            >> guids: cond_with_error!(!r.is_empty(), count!(guid, guids_count.unwrap() as usize))
             >> (IfrFormSet {
                 Guid: mg,
                 TitleStringId: tsid,
@@ -1690,7 +1687,7 @@ pub fn ifr_var_store(input: &[u8]) -> IResult<&[u8], IfrVarStore> {
                 Guid: g,
                 VarStoreId: vsid,
                 Size: size,
-                Name: String::from_utf8_lossy(&name).to_string(),
+                Name: String::from_utf8_lossy(name).to_string(),
             })
     )
 }
@@ -1742,10 +1739,7 @@ pub fn ifr_var_store_efi(input: &[u8]) -> IResult<&[u8], IfrVarStoreEfi> {
                 Guid: g,
                 Attributes: atr,
                 Size: size,
-                Name: match name {
-                    Some(n) => Some(String::from_utf8_lossy(&n).to_string()),
-                    None => None
-                }
+                Name: name.map(|n| String::from_utf8_lossy(n).to_string())
             })
     )
 }
