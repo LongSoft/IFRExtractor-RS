@@ -44,8 +44,7 @@ fn uefi_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<F
     while i < data.len() {
         if let Ok((_, candidate)) = uefi_parser::hii_string_package_candidate(&data[i..]) {
             if let Ok((_, package)) = uefi_parser::hii_package(candidate) {
-                if let Ok((_, string_package)) =
-                    uefi_parser::hii_string_package(package.Data.unwrap())
+                if let Ok((_, string_package)) = uefi_parser::hii_string_package(package.Data.unwrap())
                 {
                     let mut string_id_map = HashMap::new(); // Map of StringIds to strings
 
@@ -171,9 +170,11 @@ fn uefi_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<F
                         // Add string
                         let string = (i, candidate.len(), string_package.Language, string_id_map);
                         strings.push(string);
-                    }
 
-                    i += candidate.len();
+                        i += candidate.len();
+                    } else {
+                        i += 1;
+                    }
                 } else {
                     i += 1;
                 }
@@ -183,11 +184,6 @@ fn uefi_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<F
         } else {
             i += 1;
         }
-    }
-
-    // No need to continue if there are no string packages found
-    if strings.is_empty() {
-        return (Vec::new(), Vec::new());
     }
 
     //
@@ -664,20 +660,17 @@ fn uefi_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, Vec<F
                         *string_ids.last().unwrap(),
                     );
                     forms.push(form);
-                }
 
-                i += candidate.len();
+                    i += candidate.len();
+                } else {
+                    i += 1;
+                }
             } else {
                 i += 1;
             }
         } else {
             i += 1;
         }
-    }
-
-    // No need to continue if no forms are found
-    if forms.is_empty() {
-        return (Vec::new(), Vec::new());
     }
 
     // Construct return value
@@ -2079,7 +2072,7 @@ fn uefi_ifr_extract(
     file_path.push(string_package_index.to_string());
     file_path.push(".");
     file_path.push(string_package.language.clone());
-    file_path.push(".ifr.txt");
+    file_path.push(".uefi.ifr.txt");
     let mut output_file = OpenOptions::new()
         .write(true)
         .truncate(true)
@@ -2149,8 +2142,7 @@ fn framework_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, 
             if let Ok((_, package)) = framework_parser::hii_package(candidate) {
                 // Parse form package and obtain StringIds
                 let mut string_ids: Vec<u16> = Vec::new();
-                if let Ok((_, operations)) = framework_parser::ifr_operations(package.Data.unwrap())
-                {
+                if let Ok((_, operations)) = framework_parser::ifr_operations(package.Data.unwrap()) {
                     //let mut current_operation: usize = 0;
                     for operation in &operations {
                         //current_operation += 1;
@@ -2349,9 +2341,11 @@ fn framework_find_string_and_form_packages(data: &[u8]) -> (Vec<StringPackage>, 
                         *string_ids.last().unwrap(),
                     );
                     forms.push(form);
-                }
 
-                i += candidate.len();
+                    i += candidate.len();
+                } else {
+                    i += 1;
+                }
             } else {
                 i += 1;
             }
@@ -3117,7 +3111,7 @@ fn framework_ifr_extract(
     file_path.push(string_package_index.to_string());
     file_path.push(".");
     file_path.push(string_package.language.clone());
-    file_path.push(".ifr.txt");
+    file_path.push(".framework.ifr.txt");
     let mut output_file = OpenOptions::new()
         .write(true)
         .truncate(true)
@@ -3159,32 +3153,24 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
     file.read_to_end(&mut data).expect("Can't read input file");
 
     // Find all string and form packages in UEFI HII format
-    let mut uefi_ifr_found = true;
     let (uefi_strings, uefi_forms) = uefi_find_string_and_form_packages(&data);
-    if uefi_strings.is_empty() || uefi_forms.is_empty() {
-        uefi_ifr_found = false;
-    }
 
     // Find all string and form packages in Framework HII format
-    let mut framework_ifr_found = true;
     let (framework_strings, framework_forms) = framework_find_string_and_form_packages(&data);
-    if framework_strings.is_empty() || framework_forms.is_empty() {
-        framework_ifr_found = false;
-    }
 
     // Exit early if nothing is found
-    if !uefi_ifr_found && !framework_ifr_found {
+    if uefi_strings.is_empty() && uefi_forms.is_empty() && framework_strings.is_empty() && framework_forms.is_empty() {
         println!("No IFR data found");
         std::process::exit(2);
     }
 
     // Parse the other arguments
     let collected_args: Vec<String> = env::args().collect();
+    let mut found = false;
     if collected_args.len() == 2 {
         // Extract all form packages using all string packages with english language
-        if uefi_ifr_found {
+        if !uefi_strings.is_empty() && !uefi_forms.is_empty() {
             println!("Extracting all UEFI HII form packages using en-US UEFI HII string packages");
-            let mut found = false;
             for (form_num, form) in uefi_forms.iter().enumerate() {
                 for (string_num, string) in uefi_strings.iter().enumerate() {
                     if string.language == "en-US" {
@@ -3203,11 +3189,10 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
             }
             if !found {
                 println!("No en-US UEFI HII string packages found");
-                std::process::exit(2);
             }
-        } else if framework_ifr_found {
+        } 
+        if !framework_strings.is_empty() && !framework_forms.is_empty()  {
             println!("Extracting all Framework HII form packages using eng Framework HII string packages");
-            let mut found = false;
             for (form_num, form) in framework_forms.iter().enumerate() {
                 for (string_num, string) in framework_strings.iter().enumerate() {
                     if string.language == "eng" {
@@ -3226,14 +3211,16 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
             }
             if !found {
                 println!("No eng Framework HII string packages found");
-                std::process::exit(2);
             }
+        }
+        if !found {
+            println!("Not enough IFR data found to complete extraction");
+            std::process::exit(3);
         }
     } else if collected_args.len() == 3 && collected_args[2] == "verbose" {
         // Extract all form packages using all string packages with english language in verbose mode
-        if uefi_ifr_found {
+        if !uefi_strings.is_empty() && !uefi_forms.is_empty() {
             println!("Extracting all UEFI HII form packages using en-US UEFI HII string packages in verbose mode");
-            let mut found = false;
             for (form_num, form) in uefi_forms.iter().enumerate() {
                 for (string_num, string) in uefi_strings.iter().enumerate() {
                     if string.language == "en-US" {
@@ -3252,11 +3239,10 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
             }
             if !found {
                 println!("No en-US UEFI HII string packages found");
-                std::process::exit(2);
             }
-        } else if framework_ifr_found {
+        }  
+        if !framework_strings.is_empty() && !framework_forms.is_empty() {
             println!("Extracting all Framework HII form packages using eng Framework HII string packages in vebose mode");
-            let mut found = false;
             for (form_num, form) in framework_forms.iter().enumerate() {
                 for (string_num, string) in framework_strings.iter().enumerate() {
                     if string.language == "eng" {
@@ -3275,16 +3261,24 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
             }
             if !found {
                 println!("No eng Framework HII string packages found");
-                std::process::exit(2);
             }
         }
+        if !found {
+            println!("Not enough IFR data found to complete extraction");
+            std::process::exit(3);
+        }
     } else if collected_args.len() == 3 && collected_args[2] == "list" {
-        if uefi_ifr_found {
+        if !uefi_forms.is_empty() {
             println!("UEFI HII form packages:");
             for (form_num, form) in uefi_forms.iter().enumerate() {
                 println!("Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Used strings: {}, Min StringId: 0x{:X}, Max StringId: 0x{:X}",
                         form_num, form.offset, form.length, form.used_strings, form.min_string_id, form.max_string_id);
             }
+        } else {
+            println!("UEFI HII form packages: none");
+        }
+
+        if !uefi_strings.is_empty() {
             println!("UEFI HII string packages:");
             for (string_num, string) in uefi_strings.iter().enumerate() {
                 println!(
@@ -3296,12 +3290,21 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                     string.string_id_map.len()
                 );
             }
-        } else if framework_ifr_found {
+        } else {
+            println!("UEFI HII string packages: none");
+        }
+
+        if !framework_forms.is_empty() {
             println!("Framework HII form packages:");
             for (form_num, form) in framework_forms.iter().enumerate() {
                 println!("Index: {}, Offset: 0x{:X}, Length: 0x{:X}, Used strings: {}, Min StringId: 0x{:X}, Max StringId: 0x{:X}",
                         form_num, form.offset, form.length, form.used_strings, form.min_string_id, form.max_string_id);
             }
+        } else {
+            println!("Framework HII form packages: none");
+        }
+
+        if !framework_strings.is_empty() {
             println!("Framework HII string packages:");
             for (string_num, string) in framework_strings.iter().enumerate() {
                 println!(
@@ -3313,19 +3316,24 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                     string.string_id_map.len()
                 );
             }
+        } else {
+            println!("Framework HII string packages: none");
         }
     } else if collected_args.len() == 3 && collected_args[2] == "all" {
-        if uefi_ifr_found {
+        if !uefi_strings.is_empty() && !uefi_forms.is_empty() {
             println!("Extracting all UEFI HII form packages using all UEFI HII string packages");
             for (form_num, form) in uefi_forms.iter().enumerate() {
                 for (string_num, string) in uefi_strings.iter().enumerate() {
+                    found = true;
                     uefi_ifr_extract(path.as_os_str(), &data, form, form_num, string, string_num, false);
                 }
             }
-        } else if framework_ifr_found {
+        } 
+        if !framework_strings.is_empty() && !framework_forms.is_empty() {
             println!("Extracting all Framework HII form packages using all Framework HII string packages");
             for (form_num, form) in framework_forms.iter().enumerate() {
                 for (string_num, string) in framework_strings.iter().enumerate() {
+                    found = true;
                     framework_ifr_extract(
                         path.as_os_str(),
                         &data,
@@ -3338,14 +3346,14 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                 }
             }
         }
+        if !found {
+            println!("Not enough IFR data found to complete extraction");
+            std::process::exit(3);
+        }
     } else if collected_args.len() == 4 && collected_args[2] == "lang" {
         // Extract all form packages using all string packages in a given language
-        if uefi_ifr_found {
-            println!(
-                "Extracting all UEFI HII form packages using {} string packages",
-                collected_args[3]
-            );
-            let mut found = false;
+        if !uefi_strings.is_empty() && !uefi_forms.is_empty() {
+            println!("Extracting all UEFI HII form packages using {} string packages", collected_args[3]);
             for (form_num, form) in uefi_forms.iter().enumerate() {
                 for (string_num, string) in uefi_strings.iter().enumerate() {
                     if string.language == collected_args[3] {
@@ -3364,14 +3372,10 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
             }
             if !found {
                 println!("No {} UEFI HII string packages found", collected_args[3]);
-                std::process::exit(2);
             }
-        } else if framework_ifr_found {
-            println!(
-                "Extracting all Framework HII form packages using {} Framework HII string packages",
-                collected_args[3]
-            );
-            let mut found = false;
+        } 
+        if !framework_strings.is_empty() && !framework_forms.is_empty() {
+            println!("Extracting all Framework HII form packages using {} Framework HII string packages", collected_args[3]);
             for (form_num, form) in framework_forms.iter().enumerate() {
                 for (string_num, string) in framework_strings.iter().enumerate() {
                     if string.language == collected_args[3] {
@@ -3389,41 +3393,31 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                 }
             }
             if !found {
-                println!(
-                    "No {} Framework HII string packages found",
-                    collected_args[3]
-                );
-                std::process::exit(2);
+                println!("No {} Framework HII string packages found", collected_args[3]);
             }
         }
+        if !found {
+            println!("Not enough IFR data found to complete extraction");
+            std::process::exit(3);
+        }
     } else if collected_args.len() == 5 && collected_args[2] == "single" {
-        if uefi_ifr_found {
+        if !uefi_strings.is_empty() && !uefi_forms.is_empty() {
             // Extract the exact single combination
             let form_package_num: usize = collected_args[3]
                 .parse()
                 .expect("Can't parse form_package_number argument as a number");
             if form_package_num > uefi_forms.len() - 1 {
-                println!(
-                    "Provided form_package_number argument {} is out of range [0..{}]",
-                    form_package_num,
-                    uefi_forms.len() - 1
-                );
+                println!("Provided form_package_number argument {} is out of range [0..{}]", form_package_num, uefi_forms.len() - 1);
                 std::process::exit(4);
             }
             let string_package_num: usize = collected_args[4]
                 .parse()
                 .expect("Can't parse string_package_number argument as a number");
             if string_package_num > uefi_strings.len() - 1 {
-                println!(
-                    "Provided string_package_number argument {} is out of range [0..{}]",
-                    string_package_num,
-                    uefi_strings.len() - 1
-                );
+                println!("Provided string_package_number argument {} is out of range [0..{}]", string_package_num, uefi_strings.len() - 1);
                 std::process::exit(4);
             }
-            println!(
-                "Extracting UEFI HII form package #{form_package_num} using UEFI HII string package #{string_package_num}"
-            );
+            println!("Extracting UEFI HII form package #{form_package_num} using UEFI HII string package #{string_package_num}");
             uefi_ifr_extract(
                 path.as_os_str(),
                 &data,
@@ -3433,32 +3427,24 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                 string_package_num,
                 false
             );
-        } else if framework_ifr_found {
+            found = true;
+        } 
+        if !framework_strings.is_empty() && !framework_forms.is_empty() {
             let form_package_num: usize = collected_args[3]
                 .parse()
                 .expect("Can't parse form_package_number argument as a number");
             if form_package_num > framework_forms.len() - 1 {
-                println!(
-                    "Provided form_package_number argument {} is out of range [0..{}]",
-                    form_package_num,
-                    uefi_forms.len() - 1
-                );
+                println!("Provided form_package_number argument {} is out of range [0..{}]", form_package_num, uefi_forms.len() - 1);
                 std::process::exit(4);
             }
             let string_package_num: usize = collected_args[4]
                 .parse()
                 .expect("Can't parse string_package_number argument as a number");
             if string_package_num > framework_strings.len() - 1 {
-                println!(
-                    "Provided string_package_number argument {} is out of range [0..{}]",
-                    string_package_num,
-                    uefi_strings.len() - 1
-                );
+                println!("Provided string_package_number argument {} is out of range [0..{}]", string_package_num, uefi_strings.len() - 1);
                 std::process::exit(4);
             }
-            println!(
-                "Extracting Framework HII form package #{form_package_num} using Framework HII string package #{string_package_num}"
-            );
+            println!("Extracting Framework HII form package #{form_package_num} using Framework HII string package #{string_package_num}");
             framework_ifr_extract(
                 path.as_os_str(),
                 &data,
@@ -3468,6 +3454,11 @@ Usage: ifrextractor file.bin list - list all string and form packages in the inp
                 string_package_num,
                 false
             );
+            found = true;
+        }
+        if !found {
+            println!("Not enough IFR data found to complete extraction");
+            std::process::exit(3);
         }
     } else {
         println!("Invalid arguments");
