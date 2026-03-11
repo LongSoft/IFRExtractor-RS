@@ -96,7 +96,7 @@ impl From<u8> for HiiPackageType {
     }
 }
 
-pub fn hii_package(input: &[u8]) -> IResult<&[u8], HiiPackage> {
+pub fn hii_package(input: &[u8]) -> IResult<&[u8], HiiPackage<'_>> {
     do_parse!(
         input,
         len_raw: le_u32
@@ -164,7 +164,7 @@ pub struct HiiStringPackage<'a> {
     pub Data: &'a [u8],
 }
 
-pub fn hii_string_package(input: &[u8]) -> IResult<&[u8], HiiStringPackage> {
+pub fn hii_string_package(input: &[u8]) -> IResult<&[u8], HiiStringPackage<'_>> {
     do_parse!(
         input,
         hs  : verify!(le_u32, |val: u32| val == 0x34) >>
@@ -235,11 +235,11 @@ pub struct HiiSibtBlock<'a> {
     pub Data: Option<&'a [u8]>,
 }
 
-pub fn hii_sibt_blocks(input: &[u8]) -> IResult<&[u8], Vec<HiiSibtBlock>> {
+pub fn hii_sibt_blocks(input: &[u8]) -> IResult<&[u8], Vec<HiiSibtBlock<'_>>> {
     do_parse!(input, v: many1!(complete!(hii_sibt_block)) >> (v))
 }
 
-pub fn hii_sibt_block(input: &[u8]) -> IResult<&[u8], HiiSibtBlock> {
+pub fn hii_sibt_block(input: &[u8]) -> IResult<&[u8], HiiSibtBlock<'_>> {
     do_parse!(
         input,
         typ: peek!(le_u8)
@@ -402,7 +402,7 @@ pub struct IfrOperation<'a> {
     pub Data: Option<&'a [u8]>,
 }
 
-pub fn ifr_operation(input: &[u8]) -> IResult<&[u8], IfrOperation> {
+pub fn ifr_operation(input: &[u8]) -> IResult<&[u8], IfrOperation<'_>> {
     do_parse!(
         input,
         opcode: le_u8
@@ -418,7 +418,7 @@ pub fn ifr_operation(input: &[u8]) -> IResult<&[u8], IfrOperation> {
     )
 }
 
-pub fn ifr_operations(input: &[u8]) -> IResult<&[u8], Vec<IfrOperation>> {
+pub fn ifr_operations(input: &[u8]) -> IResult<&[u8], Vec<IfrOperation<'_>>> {
     do_parse!(input, v: many1!(complete!(ifr_operation)) >> (v))
 }
 
@@ -2078,7 +2078,7 @@ pub struct IfrGuid<'a> {
     pub Data: &'a [u8],
 }
 
-pub fn ifr_guid(input: &[u8]) -> IResult<&[u8], IfrGuid> {
+pub fn ifr_guid(input: &[u8]) -> IResult<&[u8], IfrGuid<'_>> {
     do_parse!(input, g: guid >> d: rest >> (IfrGuid { Guid: g, Data: d }))
 }
 
@@ -2119,7 +2119,7 @@ pub struct IfrGuidEdk2<'a> {
     pub Data: &'a [u8],
 }
 
-pub fn ifr_guid_edk2(input: &[u8]) -> IResult<&[u8], IfrGuidEdk2> {
+pub fn ifr_guid_edk2(input: &[u8]) -> IResult<&[u8], IfrGuidEdk2<'_>> {
     do_parse!(
         input,
         e: le_u8
@@ -2185,7 +2185,7 @@ pub struct IfrGuidEdk<'a> {
     pub Data: &'a [u8],
 }
 
-pub fn ifr_guid_edk(input: &[u8]) -> IResult<&[u8], IfrGuidEdk> {
+pub fn ifr_guid_edk(input: &[u8]) -> IResult<&[u8], IfrGuidEdk<'_>> {
     do_parse!(
         input,
         e: le_u8

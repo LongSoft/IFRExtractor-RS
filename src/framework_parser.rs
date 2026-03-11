@@ -90,7 +90,7 @@ impl From<u16> for HiiPackageType {
     }
 }
 
-pub fn hii_package(input: &[u8]) -> IResult<&[u8], HiiPackage> {
+pub fn hii_package(input: &[u8]) -> IResult<&[u8], HiiPackage<'_>> {
     do_parse!(
         input,
         len: le_u32
@@ -207,7 +207,7 @@ pub struct IfrOperation<'a> {
     pub Data: Option<&'a [u8]>,
 }
 
-pub fn ifr_operation(input: &[u8]) -> IResult<&[u8], IfrOperation> {
+pub fn ifr_operation(input: &[u8]) -> IResult<&[u8], IfrOperation<'_>> {
     do_parse!(
         input,
         opcode: le_u8
@@ -222,7 +222,7 @@ pub fn ifr_operation(input: &[u8]) -> IResult<&[u8], IfrOperation> {
     )
 }
 
-pub fn ifr_operations(input: &[u8]) -> IResult<&[u8], Vec<IfrOperation>> {
+pub fn ifr_operations(input: &[u8]) -> IResult<&[u8], Vec<IfrOperation<'_>>> {
     do_parse!(input, v: many1!(complete!(ifr_operation)) >> (v))
 }
 
