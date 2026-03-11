@@ -16,6 +16,10 @@ use std::io::Write;
 use std::path::Path;
 use std::str;
 
+// SHA256
+extern crate sha256;
+use sha256::digest;
+
 struct StringPackage {
     offset: usize,
     length: usize,
@@ -710,7 +714,7 @@ fn uefi_ifr_extract(
     let strings_map = &string_package.string_id_map;
 
     // Add version number and extraction mode
-    writeln!(&mut text, "Program version: {}, Extraction mode: UEFI", VERSION.unwrap_or("0.0.0")).unwrap();
+    writeln!(&mut text, "Program version: {}, Extraction mode: UEFI, SHA256: {}", VERSION.unwrap_or("0.0.0"), digest(data)).unwrap();
 
     if let Ok((_, candidate)) =
         uefi_parser::hii_form_package_candidate(&data[form_package.offset..])
@@ -2396,7 +2400,7 @@ fn framework_ifr_extract(
     let strings_map = &string_package.string_id_map;
 
     // Add version number and extraction mode
-    writeln!(&mut text, "Program version: {}, Extraction mode: Framework", VERSION.unwrap_or("0.0.0")).unwrap();
+    writeln!(&mut text, "Program version: {}, Extraction mode: Framework, SHA256: {}", VERSION.unwrap_or("0.0.0"), digest(data)).unwrap();
 
     if let Ok((_, candidate)) =
         framework_parser::hii_form_package_candidate(&data[form_package.offset..])
